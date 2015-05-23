@@ -1,0 +1,26 @@
+Entities\Send_history:
+  type: entity
+  table: send_history
+  fields:
+    id:
+      type: integer
+      id: true
+      generator:
+        strategy: AUTO
+    send_date:
+      type: datetime
+      nullable: false
+    message:
+      type: text
+      nullable: true
+  manyToOne:
+    from_user:
+      targetEntity: User
+      joinColumns:
+        from_user_id:
+          referencedColumnName: id
+    to_user:
+      targetEntity: User
+      joinColumns:
+        to_user_id:
+          referencedColumnName: id

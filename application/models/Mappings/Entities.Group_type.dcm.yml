@@ -1,0 +1,14 @@
+Entities\Group_type:
+  type: entity
+  table: group_type
+  fields:
+    id:
+      type: integer
+      id: true
+      generator:
+        strategy: AUTO
+    title:
+      type: string
+      length: 255
+      nullable: false
+    

@@ -9,7 +9,7 @@ if (!defined('BASEPATH'))
  * and open the template in the editor.
  */
 
-class Basecontroller extends CI_Controller {
+class Base_controller extends CI_Controller {
 
     public function __construct() {
         parent::__construct();

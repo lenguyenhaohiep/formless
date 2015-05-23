@@ -1,0 +1,23 @@
+Entities\Modify_history:
+  type: entity
+  table: modify_history
+  fields:
+    id:
+      type: integer
+      id: true
+      generator:
+        strategy: AUTO
+    modified_date:
+      type: datetime
+      nullable: false
+  manyToOne:
+    form:
+      targetEntity: Form
+      joinColumns:
+        form_id:
+          referencedColumnName: id
+    user:
+      targetEntity: User
+      joinColumns:
+        user_id:
+          referencedColumnName: id

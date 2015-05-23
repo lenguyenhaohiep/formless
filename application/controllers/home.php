@@ -5,9 +5,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-require_once 'basecontroller.php';
+require_once 'base_controller.php';
 
-class Home extends Basecontroller {
+class Home extends Base_controller {
 
     function __construct() {
         parent::__construct();
@@ -23,7 +23,10 @@ class Home extends Basecontroller {
     }
 
     function create() {
-        $this->render_page(lang('create_page_title'), "create", 'home/create', '');
+    	//Load model
+    	$this->load->model('type_model');
+    	$this->data['group_types'] = $this->type_model->getAllTypes();
+        $this->render_page(lang('create_page_title'), "create", 'home/create', $this->data);
     }
 
     function sent() {

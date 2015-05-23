@@ -27,14 +27,14 @@
 
                                     <select class="form-control">
                                         <option>Please Select Document</option>
-  <optgroup label="Swedish Cars">
-    <option value="volvo">Volvo</option>
-    <option value="saab">Saab</option>
-  </optgroup>
-  <optgroup label="German Cars">
-    <option value="mercedes">Mercedes</option>
-    <option value="audi">Audi</option>
-  </optgroup>
+                                        <?php
+                                        foreach ($group_types as $group){
+                                        	echo "<optgroup label='$group[0]'>";
+                                        	foreach ($group[1] as $type)
+                                        		echo "<option value='".$type->getId()."'>".$type->getTitle()."</option>";
+                                        	echo "</optgroup>";
+                                        } 
+                                        ?>
                                     </select>
                                                     </div>
                     <input type="text" placeholder="Type your document title here..." class="form-control input-sm" id="btn-input">
