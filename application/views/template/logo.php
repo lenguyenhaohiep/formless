@@ -6,5 +6,5 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a href="index.html" class="navbar-brand"><?php echo lang('application_name'); ?></a>
+                <a href="<?php echo base_url();?> " class="navbar-brand"><?php echo lang('application_name'); ?></a>
             </div>

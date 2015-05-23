@@ -23,7 +23,7 @@ class Home extends Basecontroller {
     }
 
     function create() {
-        $this->render_page(lang('create_page_title'), "create", 'home/form', '');
+        $this->render_page(lang('create_page_title'), "create", 'home/create', '');
     }
 
     function sent() {
@@ -33,8 +33,12 @@ class Home extends Basecontroller {
     function draft() {
         $this->render_page(lang('draft_page_title'), "draft", 'home/form', '');
     }
-    
-    function signature(){
+
+    function mydocuments() {
+        $this->render_page(lang('document_page_title'), "mydocuments", 'home/form', '');
+    }
+
+    function signature() {
         $this->render_page(lang('signature_page_title'), "", 'home/form', '');
     }
 
