@@ -11,3 +11,8 @@
 #page-wrapper {
     margin: 0 0 0 150px;
 }
+
+.chat-panel .panel-body {
+  overflow-y: scroll;
+  height: auto;
+}

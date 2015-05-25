@@ -1,4 +1,3 @@
-<div id="page-wrapper" style="min-height: 275px;">
 <script type="text/javascript">
 function load_form(){
 	$.ajax({
@@ -29,23 +28,39 @@ function discard_form(){
 }
 
 function save_form(){
-	$.ajax({
-		  url: "<?php echo base_url()?>index.php/form/save/",
-		  success:function(data) {
-			  alert('save_form');
-		  }
-	});
+	$('#submit-form').click();
+
+	form = $('#form-info')[0];
+	    if(form.checkValidity()){
+	    	$.ajax({
+	  		  type: "POST",
+	  		  url: "<?php echo base_url()?>index.php/form/save/",
+	  		  dataType: "json",
+	  		  data: {form_id: $('#form-id').val(), type_id:$('#cmb-type-id').val(), title:$('#form-title').val()},
+	  		  success:function(data) {
+	  			  alert(data);
+	  		  }
+	  	});
+    }
+}
+
+function new_message(){
+	$('#new-message').css('display','block');
+}
+
+function close_new_message(){
+	$('#new-message').css('display','none');
 }
 
 </script>
-    <!-- /.row -->
-
+<div id="page-wrapper" style="min-height: 275px;">
     
-                    					<form id='form-info' method="post">
+
     
     <div class="row">
         <div class="col-lg-12">
             <div class="page-header">
+            	<button id='btn-new-message' class="btn btn-primary" type="button" onclick="new_message()">New Message</button>
                 <button class="btn btn-success" type="button" onclick="save_form()">Save</button>
                 <button class="btn btn-warning" type="button" onclick="clear_form()">Clear</button>
                 <button class="btn btn-danger" type="button" onclick='discard_form()'>Discard</button>
@@ -58,9 +73,31 @@ function save_form(){
     <!-- /.row -->
     <div class="row">
         <div class="col-lg-8">
-            <div class="panel panel-default">
+        
+        
+        <div id='new-message' class="alert alert-info alert-dismissable" style="display: none; background-color: #f5f5f5">
+                                <button type="button" class="close" onclick="close_new_message()">×</button>
+                    <form id='email-info' action="index.php/form/send">
                 <div class="panel-heading">
+                    <input type="email" id="txt-email" class="form-control input-sm" placeholder="Type emails here..." required>
                 
+                                </div>
+                <!-- /.panel-heading -->
+                <div class="panel-body">
+<textarea rows="5" placeholder="Type your message here" class="form-control" required></textarea>                    
+                </div>
+                <!-- /.panel-body -->                <div class="panel-heading">
+                
+                <input class="btn btn-info" type="submit" value='Send'>
+                </div>
+                </form>
+        
+        </div>
+        
+            <div class="panel panel-default">
+
+                <div class="panel-heading">
+   <form id='form-info' onsubmit="return false">
                 	<div class="form-group">
                                     <select id='cmb-type-id' class="form-control" required onchange="load_form()">
                                         <option value=''>Please Select Document</option>
@@ -75,7 +112,9 @@ function save_form(){
                                     </select>
                                  
                     </div>
-                    <input type="email" placeholder="Type your document title here..." class="form-control input-sm" id="txt-title" required>
+                    <input type="hidden" id='form-id' value=''>
+                    <input type="text" placeholder="Type your document title here..." class="form-control input-sm" id="form-title" required>
+                    <input type="submit" id='submit-form'>
    </form>
                 </div>
                 <!-- /.panel-heading -->
@@ -102,23 +141,7 @@ function save_form(){
             <!-- /.panel -->
 
             <!-- /.panel -->
-            <div class="chat-panel panel panel-default">
-            <form id='email-info' action="<?php echo  base_url()?>index.php/form/send">
-                <div class="panel-heading">
-                    <input type="email" id="btn-input" class="form-control input-sm" placeholder="Type emails here..." required>
-                
-                                </div>
-                <!-- /.panel-heading -->
-                <div class="panel-body">
-<textarea rows="15" placeholder="Type your message here" class="form-control" required></textarea>                    
-                </div>
-                <!-- /.panel-body -->                <div class="panel-heading">
-                
-                <input class="btn btn-primary" type="submit" value='Send'>
-                </div>
-                </form>
-                <!-- /.panel-footer -->
-            </div>
+
             <!-- /.panel .chat-panel -->
         </div>
     </div>

@@ -28,7 +28,8 @@ class Form_model extends CI_Model{
 			$form->setType($type);
 			$form->setTitle($title);
 			$form->setPathForm($pathForm);
-			$form->setStatus($status=0);
+			if ($form_id == null)
+				$form->setStatus($status);
 			$form->setCreatedDate(new DateTime());
 			
 			$this->em->persist($form);

@@ -21,7 +21,14 @@ class Form extends CI_Controller{
 	}
 	
 	function save(){
+		$form_id = $this->input->post('form_id');
+		$title= $this->input->post('title');
+		$type_id= $this->input->post('type_id');
 		
+		$this->load->model('form_model');
+		$form = $this->form_model->create_or_update_form($form_id, $title, $type_id, $status=0, $path_form='test');
+
+		echo $form->getId();
 	}
 	
 	function send(){

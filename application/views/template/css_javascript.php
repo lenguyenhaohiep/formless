@@ -42,7 +42,6 @@
 
 <!-- Custom Theme JavaScript -->
 <script src="<?php echo base_url(); ?>dist/js/sb-admin-2.js"></script>
-
-
+    
 <!--Formless CSS Adaptation--> 
-<link href="<?php echo base_url(); ?>/css/formless.css" rel="stylesheet">
+<link href="<?php echo base_url(); ?>/css/formless.css" rel="stylesheet">    
