@@ -45,10 +45,4 @@
 
 
 <!--Formless CSS Adaptation--> 
-<style type="text/css">
-.page-header {
-    border-bottom: 1px solid #eee;
-    margin: 15px 0 20px;
-    padding-bottom: 15px;
-}
-</style>
+<link href="<?php echo base_url(); ?>/css/formless.css" rel="stylesheet">

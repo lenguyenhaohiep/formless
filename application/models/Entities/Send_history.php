@@ -25,9 +25,24 @@ class Send_history
     private $message;
 
     /**
+     * @var integer $status
+     */
+    private $status;
+
+    /**
+     * @var Entities\Form
+     */
+    private $form;
+
+    /**
      * @var Entities\User
      */
-    private $user;
+    private $from_user;
+
+    /**
+     * @var Entities\User
+     */
+    private $to_user;
 
 
     /**
@@ -85,58 +100,48 @@ class Send_history
     }
 
     /**
-     * Set user
+     * Set status
      *
-     * @param Entities\User $user
+     * @param integer $status
      * @return Send_history
      */
-    public function setUser(\Entities\User $user = null)
+    public function setStatus($status)
     {
-        $this->user = $user;
+        $this->status = $status;
         return $this;
     }
 
     /**
-     * Get user
+     * Get status
      *
-     * @return Entities\User 
+     * @return integer 
      */
-    public function getUser()
+    public function getStatus()
     {
-        return $this->user;
+        return $this->status;
     }
-    /**
-     * @var Entities\User
-     */
-    private $to_user;
-
 
     /**
-     * Set to_user
+     * Set form
      *
-     * @param Entities\User $toUser
+     * @param Entities\Form $form
      * @return Send_history
      */
-    public function setToUser(\Entities\User $toUser = null)
+    public function setForm(\Entities\Form $form = null)
     {
-        $this->to_user = $toUser;
+        $this->form = $form;
         return $this;
     }
 
     /**
-     * Get to_user
+     * Get form
      *
-     * @return Entities\User 
+     * @return Entities\Form 
      */
-    public function getToUser()
+    public function getForm()
     {
-        return $this->to_user;
+        return $this->form;
     }
-    /**
-     * @var Entities\User
-     */
-    private $from_user;
-
 
     /**
      * Set from_user
@@ -158,5 +163,27 @@ class Send_history
     public function getFromUser()
     {
         return $this->from_user;
+    }
+
+    /**
+     * Set to_user
+     *
+     * @param Entities\User $toUser
+     * @return Send_history
+     */
+    public function setToUser(\Entities\User $toUser = null)
+    {
+        $this->to_user = $toUser;
+        return $this;
+    }
+
+    /**
+     * Get to_user
+     *
+     * @return Entities\User 
+     */
+    public function getToUser()
+    {
+        return $this->to_user;
     }
 }

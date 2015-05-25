@@ -63,18 +63,6 @@ class Modify_history extends \Entities\Modify_history implements \Doctrine\ORM\P
         return parent::getModifiedDate();
     }
 
-    public function setUser(\Entities\User $user = NULL)
-    {
-        $this->__load();
-        return parent::setUser($user);
-    }
-
-    public function getUser()
-    {
-        $this->__load();
-        return parent::getUser();
-    }
-
     public function setForm(\Entities\Form $form = NULL)
     {
         $this->__load();
@@ -85,6 +73,18 @@ class Modify_history extends \Entities\Modify_history implements \Doctrine\ORM\P
     {
         $this->__load();
         return parent::getForm();
+    }
+
+    public function setUser(\Entities\User $user = NULL)
+    {
+        $this->__load();
+        return parent::setUser($user);
+    }
+
+    public function getUser()
+    {
+        $this->__load();
+        return parent::getUser();
     }
 
 

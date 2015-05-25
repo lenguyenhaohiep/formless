@@ -13,7 +13,15 @@ Entities\Send_history:
     message:
       type: text
       nullable: true
+    status:
+      type: integer
+      nullable: false
   manyToOne:
+    form:
+      targetEntity: Form
+      joinColumns:
+        form_id:
+          referencedColumnName: id
     from_user:
       targetEntity: User
       joinColumns:

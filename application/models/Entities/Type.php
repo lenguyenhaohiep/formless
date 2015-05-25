@@ -24,6 +24,11 @@ class Type
      */
     private $path_template;
 
+    /**
+     * @var Entities\Group_type
+     */
+    private $group_type;
+
 
     /**
      * Get id
@@ -78,11 +83,6 @@ class Type
     {
         return $this->path_template;
     }
-    /**
-     * @var Entities\Group_type
-     */
-    private $group_type;
-
 
     /**
      * Set group_type

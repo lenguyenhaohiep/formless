@@ -75,28 +75,28 @@ class Send_history extends \Entities\Send_history implements \Doctrine\ORM\Proxy
         return parent::getMessage();
     }
 
-    public function setUser(\Entities\User $user = NULL)
+    public function setStatus($status)
     {
         $this->__load();
-        return parent::setUser($user);
+        return parent::setStatus($status);
     }
 
-    public function getUser()
+    public function getStatus()
     {
         $this->__load();
-        return parent::getUser();
+        return parent::getStatus();
     }
 
-    public function setToUser(\Entities\User $toUser = NULL)
+    public function setForm(\Entities\Form $form = NULL)
     {
         $this->__load();
-        return parent::setToUser($toUser);
+        return parent::setForm($form);
     }
 
-    public function getToUser()
+    public function getForm()
     {
         $this->__load();
-        return parent::getToUser();
+        return parent::getForm();
     }
 
     public function setFromUser(\Entities\User $fromUser = NULL)
@@ -111,10 +111,22 @@ class Send_history extends \Entities\Send_history implements \Doctrine\ORM\Proxy
         return parent::getFromUser();
     }
 
+    public function setToUser(\Entities\User $toUser = NULL)
+    {
+        $this->__load();
+        return parent::setToUser($toUser);
+    }
+
+    public function getToUser()
+    {
+        $this->__load();
+        return parent::getToUser();
+    }
+
 
     public function __sleep()
     {
-        return array('__isInitialized__', 'id', 'send_date', 'message', 'from_user', 'to_user');
+        return array('__isInitialized__', 'id', 'send_date', 'message', 'status', 'form', 'from_user', 'to_user');
     }
 
     public function __clone()

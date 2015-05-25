@@ -26,20 +26,56 @@
                                 <table class="table table-striped table-bordered table-hover" id="dataTables-example">
                                     <thead>
                                         <tr>
-                                            <th>Rendering engine</th>
-                                            <th>Browser</th>
-                                            <th>Platform(s)</th>
-                                            <th>Engine version</th>
-                                            <th>CSS grade</th>
+                                            <th>Form Title</th>
+                                            <?php if ($this->session->userdata('select') == 'sent') echo "<th>Receiver</th>";?>
+                                            <?php if ($this->session->userdata('select') == 'inbox') echo "<th>Sender</th>";?>
+                                            
+                                            <th>Date</th>
+                                            <th>Type</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr class="odd gradeX">
-                                            <td>Trident</td>
-                                            <td>Internet Explorer 4.0</td>
-                                            <td>Win 95+</td>
-                                            <td class="center">4</td>
-                                            <td class="center">X</td>
+<?php 
+$i=0;
+if (isset($forms)){
+
+		
+	foreach ($forms as $form){
+		if ($i%2==0)
+			echo "<tr class='odd gradeX'>";
+		else
+			echo "<tr class='even gradeX'>";
+		echo "<td><a href='".base_url()."index.php/form/detail/".$form->getId()."'>".$form->getTitle()."</td>";
+		echo "<td>".$form->getCreatedDate()->format("d/m/Y H:i:s")."</td>";
+		echo "<td>".$form->getType()->getTitle()."</td>";	
+		echo "</tr>";
+		$i = $i+1;
+	}
+}
+else{
+	
+	foreach ($emails as $form){
+		if ($i%2==0)
+			echo "<tr class='odd gradeX'>";
+		else
+			echo "<tr class='even gradeX'>";
+		echo "<td><a href='".base_url()."index.php/form/detail/".$form->getForm()->getId()."'>".$form->getForm()->getTitle()."</a></td>";
+		
+		if ($this->session->userdata('select') == 'sent')
+			echo "<td><b>".$form->getToUser()->getFirstName()." ".$form->getToUser()->getLastName()."</b><br/>".$form->getToUser()->getEmail()."</td>";
+		
+		if ($this->session->userdata('select') == 'inbox')
+			echo "<td><b>".$form->getFromUser()->getFirstName()." ".$form->getFromUser()->getLastName()."</b><br/>".$form->getFromUser()->getEmail()."</td>";
+		
+		
+		echo "<td>".$form->getSendDate()->format("d/m/Y H:i:s")."</td>";
+		echo "<td>".$form->getForm()->getType()->getTitle()."</td>";
+		$i = $i+1;
+		echo "</tr>";
+		
+	}
+}
+?>
                                         </tr>
       
                                     </tbody>

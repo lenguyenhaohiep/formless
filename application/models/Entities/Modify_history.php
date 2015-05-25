@@ -20,6 +20,11 @@ class Modify_history
     private $modified_date;
 
     /**
+     * @var Entities\Form
+     */
+    private $form;
+
+    /**
      * @var Entities\User
      */
     private $user;
@@ -58,33 +63,6 @@ class Modify_history
     }
 
     /**
-     * Set user
-     *
-     * @param Entities\User $user
-     * @return Modify_history
-     */
-    public function setUser(\Entities\User $user = null)
-    {
-        $this->user = $user;
-        return $this;
-    }
-
-    /**
-     * Get user
-     *
-     * @return Entities\User 
-     */
-    public function getUser()
-    {
-        return $this->user;
-    }
-    /**
-     * @var Entities\Form
-     */
-    private $form;
-
-
-    /**
      * Set form
      *
      * @param Entities\Form $form
@@ -104,5 +82,27 @@ class Modify_history
     public function getForm()
     {
         return $this->form;
+    }
+
+    /**
+     * Set user
+     *
+     * @param Entities\User $user
+     * @return Modify_history
+     */
+    public function setUser(\Entities\User $user = null)
+    {
+        $this->user = $user;
+        return $this;
+    }
+
+    /**
+     * Get user
+     *
+     * @return Entities\User 
+     */
+    public function getUser()
+    {
+        return $this->user;
     }
 }

@@ -27,7 +27,6 @@ Entities\Form:
       joinColumns:
         user_id:
           referencedColumnName: id
-  manyToOne:
     type:
       targetEntity: Type
       joinColumns:

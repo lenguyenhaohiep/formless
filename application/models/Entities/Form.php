@@ -35,6 +35,11 @@ class Form
     private $status;
 
     /**
+     * @var Entities\User
+     */
+    private $user;
+
+    /**
      * @var Entities\Type
      */
     private $type;
@@ -136,6 +141,28 @@ class Form
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * Set user
+     *
+     * @param Entities\User $user
+     * @return Form
+     */
+    public function setUser(\Entities\User $user = null)
+    {
+        $this->user = $user;
+        return $this;
+    }
+
+    /**
+     * Get user
+     *
+     * @return Entities\User 
+     */
+    public function getUser()
+    {
+        return $this->user;
     }
 
     /**
