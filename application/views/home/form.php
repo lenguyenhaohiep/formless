@@ -3,22 +3,14 @@
     <div class="row">
 
         <div class="col-lg-12">
-            <div class="page-header">
-                <button class="btn btn-default" type="button">Discard</button>
-                <button class="btn btn-primary" type="button">Send</button>
-                <button class="btn btn-success" type="button">Achieved</button>
-                <button class="btn btn-info" type="button">Sign</button>
-                <button class="btn btn-warning" type="button">Clear</button>
-                <button class="btn btn-danger" type="button">Delete</button>
-
-            </div>
+ 
         </div>            
 
 
     </div>
     <div class="row">
         <div class="col-lg-12">
-            <div class="panel panel-default">
+            <div class="panel-default">
 
                         <!-- /.panel-heading -->
                         <div class="panel-body">
@@ -62,10 +54,10 @@ else{
 		echo "<td><a href='".base_url()."index.php/form/detail/".$form->getForm()->getId()."'>".$form->getForm()->getTitle()."</a></td>";
 		
 		if ($this->session->userdata('select') == 'sent')
-			echo "<td><b>".$form->getToUser()->getFirstName()." ".$form->getToUser()->getLastName()."</b><br/>".$form->getToUser()->getEmail()."</td>";
+			echo "<td><b>".$form->getToUser()->getFirstName()." ".$form->getToUser()->getLastName()."</b> (".$form->getToUser()->getEmail().")</td>";
 		
 		if ($this->session->userdata('select') == 'inbox')
-			echo "<td><b>".$form->getFromUser()->getFirstName()." ".$form->getFromUser()->getLastName()."</b><br/>".$form->getFromUser()->getEmail()."</td>";
+			echo "<td><b>".$form->getFromUser()->getFirstName()." ".$form->getFromUser()->getLastName()."</b> (".$form->getFromUser()->getEmail().")</td>";
 		
 		
 		echo "<td>".$form->getSendDate()->format("d/m/Y H:i:s")."</td>";

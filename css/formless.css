@@ -16,3 +16,45 @@
   overflow-y: scroll;
   height: auto;
 }
+
+.ul.tokens-token-list, div.tokens-suggestion-selector{
+	font-size: 14px;
+	color: #000000;
+}
+
+div.tokens-suggestion-selector p {
+    font-weight: normal;
+}
+ul.tokens-token-list {
+    background: #ffffff none repeat scroll 0 0;
+    width: 100%;
+}
+
+div.tokens-suggestion-selector ul li.tokens-highlighted-suggestion {
+    background: #d9edf7 none repeat scroll 0 0;
+}
+
+div.tokens-suggestion-selector {
+    background: #ffffff none repeat scroll 0 0;
+    color: 
+}
+
+ul.tokens-token-list, div.tokens-suggestion-selector {
+    font-size: 14px;
+}
+
+ul.tokens-token-list .tokens-input-text{
+	color: #000000;
+}
+
+ul.tokens-token-list .tokens-list-token-holder{
+	color: #ffffff;
+}
+
+ul.tokens-token-list .tokens-list-token-holder {
+    font-size: 14px;
+}
+
+.tokens-input-text {
+	width: 100%;
+}

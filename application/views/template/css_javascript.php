@@ -42,6 +42,12 @@
 
 <!-- Custom Theme JavaScript -->
 <script src="<?php echo base_url(); ?>dist/js/sb-admin-2.js"></script>
-    
+ 
+<!-- jQuery-Tagging-Tokenizer-Input-with-Autocomplete -->
+<script src="<?php echo base_url(); ?>js/tokens.js"></script>
+
+<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>css/tokens.css">
+
+
 <!--Formless CSS Adaptation--> 
 <link href="<?php echo base_url(); ?>/css/formless.css" rel="stylesheet">    
