@@ -57,7 +57,7 @@ class Auth extends CI_Controller {
                 //redirect them back to the home page
                 $this->session->set_flashdata('message', $this->ion_auth->messages());
                 
-                $this->session->set_userdata('identity',$this->input->post('identity'));
+                //$this->session->set_userdata('identity',$this->input->post('identity'));
                 
                 $this->load->model('user_model');
                 $user = $this->user_model->get_user_from_email($this->input->post('identity'));

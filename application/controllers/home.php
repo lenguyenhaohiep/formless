@@ -24,6 +24,9 @@ class Home extends Base_controller {
     	//Load model
 	    	$this->load->model('type_model');
 	    	$this->data['group_types'] = $this->type_model->getAllTypes();
+	    	$this->data['own'] = true;
+	    	$this->data['permission'] = true;
+	    	
 	        $this->render_page(lang('create_page_title'), "create", 'home/create', $this->data);
     }
 
@@ -42,6 +45,8 @@ class Home extends Base_controller {
     function mydocuments() {    	
     	$this->load->model('form_model');
     	$this->data['forms'] = $this->form_model->get_all_forms($this->ion_auth->get_user_id());
+    	$this->data['shared'] = $this->form_model->get_shared_forms($this->ion_auth->get_user_id());
+    	 
         $this->render_page(lang('document_page_title'), "mydocuments", 'home/form', $this->data);
     }
 

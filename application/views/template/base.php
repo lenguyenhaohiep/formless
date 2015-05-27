@@ -24,4 +24,14 @@
         </div>
 
     </body>
+    <script type="text/javascript">
+    	$(document).ready(function (){
+    		h = window.innerHeight - 1;
+    		$("#wrapper").css('max-height', h + 'px');
+    		$("#wrapper").css('min-height', h + 'px');
+    		$("#page-wrapper").css('overflow-x', 'scroll');
+    		$("#page-wrapper").css('max-height', h - $('.navbar').height() + 'px');
+    		$("#page-wrapper").css('min-height', h - $('.navbar').height() + 'px');
+    	});	
+    </script>
 </html>

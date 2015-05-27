@@ -20,8 +20,11 @@ class Form_model extends CI_Model{
 		$type = $this->em->find('Entities\Type', $type_id);
 		
 		//create new form
-		if ($form_id==null)
+		if ($form_id==null){
 			$form = new Entities\Form;
+			$form->setCreatedDate(new DateTime());
+			$status = 0;
+		}
 		else 
 			$form = $this->em->find('Entities\Form', $form_id);
 		if (isset($form)){
@@ -30,7 +33,6 @@ class Form_model extends CI_Model{
 			$form->setPathForm($path_form);
 			$form->setStatus($status);
 
-			$form->setCreatedDate(new DateTime());
 			$form->setUser($this->em->find('Entities\User',$this->ion_auth->get_user_id()));
 			
 			$this->em->persist($form);
@@ -42,7 +44,6 @@ class Form_model extends CI_Model{
 	function modify_form($form_id, $user_id){
 		//get the current form
 		$form = $this->em->find('Entities\Form', $form_id);
-		
 		//get the user who modifies the form
 		$user = $this->em->find('Entities\User', $user_id);
 		
@@ -88,6 +89,55 @@ class Form_model extends CI_Model{
 		
 	}
 	
+	
+	function share_form($form_id=NULL, $title, $type_id, $status, $path_form, $to_user_id){
+		if ($to_user_id == null){
+			$form = $this->create_or_update_form($form_id, $title, $type_id, $status, $path_form);
+				
+			//delete old shared information
+			$share = $this->em->getRepository('Entities\Share')->findBy(array('form'=>$form));
+			//->find(array('form'=>$form, 'user'=>$to_user));
+			
+			if ($share != null){
+				foreach ($share as $s){
+					$this->em->remove($s);
+					$this->em->flush();
+				}
+			}
+			
+			return;
+		}
+		
+		
+		$form = $this->create_or_update_form($form_id, $title, $type_id, $status, $path_form);
+	
+		//get to users
+		$to_user = $this->em->find('Entities\User',$to_user_id);
+
+		//delete old shared information
+		$share = $this->em->getRepository('Entities\Share')->findBy(array('form'=>$form, 'user'=>$to_user));
+		//->find(array('form'=>$form, 'user'=>$to_user));
+		
+		if ($share != null){
+			foreach ($share as $s){
+				$this->em->remove($s);
+				$this->em->flush();
+			}
+		}
+		
+// 		//update shared form information
+		$share = new Entities\Share();
+		$share->setForm($form);
+		$share->setUser($to_user);
+		$share->setForm($form);
+
+		$this->em->persist($share);
+		$result = $this->em->flush();
+	
+		return $share;
+	
+	}
+	
 	function get_inbox($user_id){
 // 		$user = $this->em->find('Entities\User',$user_id);		
 // 		$inbox = $this->em->getRepository('Entities\Send_history')->findBy(array('status'=>1,'to_user'=>$user),array('send_date'=>'desc'));
@@ -128,8 +178,7 @@ class Form_model extends CI_Model{
 	function get_history_modification($form_id){
 		$form = $this->em->find('Entities\Form',$form_id);
 		
-		$history = $this->em->getRepository('Entities\Modify_history')->findByForm($form,array('id','desc'));
-		//findBy(array('form'=>$form),array('id','desc'));
+		$history = $this->em->getRepository('Entities\Modify_history')->findBy(array('form'=>$form),array('modified_date'=>'desc'));
 		return $history;
 	}
 	
@@ -195,6 +244,71 @@ class Form_model extends CI_Model{
 	function mark_as_read($form_id, $user_id){
 		$sql = "update send_history set status=0 where form_id = $form_id and to_user_id = $user_id";
 		$this->em->getConnection()->query($sql);
+	}
+	
+	function check_modify($form_id){
+		$em = $this->doctrine->em;
+		
+		$user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
+		$form = $em->getRepository('Entities\Form')->findOneBy(array('id'=>$form_id));
+		
+		$share = $em->getRepository('Entities\Share')->findBy(array('form'=>$form, 'user'=>$user));
+
+		if ($share != null){
+			return true;
+		}
+
+		return false;
+	}
+	
+	function check_delete($form_id){
+		$em = $this->doctrine->em;
+		
+		$user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
+		$form = $em->getRepository('Entities\Form')->findOneBy(array('id'=>$form_id, 'user'=> $user));
+		if ($form != null){
+			$send = $em->getRepository('Entities\Send_history')->findByForm($form);
+			if (count($send) > 0)
+				return false;
+			return true;
+		}
+		return false;
+	}
+	
+	function check_own_form($form_id){
+		$em = $this->doctrine->em;
+		
+		$user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
+		$form = $em->getRepository('Entities\Form')->findOneBy(array('id'=>$form_id, 'user'=> $user));
+				
+		if ($form != null){
+			return true;
+		}
+		return false;
+	}
+	
+	function get_shared_forms(){
+		$em = $this->doctrine->em;
+		
+		$user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
+		
+		$share = $em->getRepository('Entities\Share')->findByUser($user);
+		
+		return $share;
+	}
+	
+	function get_share_by_form($form_id){
+		$em = $this->doctrine->em;
+		
+		$user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
+		$form = $em->getRepository('Entities\Form')->findOneBy(array('id'=>$form_id, 'user'=> $user));
+
+		if ($form != null){
+			$share = $em->getRepository('Entities\Share')->findBy(array('form'=>$form));
+			return $share;
+		}
+		return null;
+		
 	}
 	
 

@@ -30,12 +30,59 @@ function initilize(){
 
 	    	 $("input.tokens-input-text").attr('placeholder', 'Enter emails...');
 	    	 
-	    		}   
+	    }   
 	});
+	
+	$.ajax({
+	    url: "<?php echo base_url()?>index.php/form/get_shared_info/",
+	    type: "post",
+	    dataType: 'json',
+	    data: {form_id: $('#form-id').val()},
+	     success:function(data){
+			  	var json = (data);
+			     
+			  $.ajax({
+				     url:"<?php echo base_url()?>index.php/user/get_all_emails",
+				     type:"post",
+				     dataType: 'json',
+				     success:function(data){
+				    	 $('#txt-email-share').tokens({
+				    		    source : data,
+				    		    allowAddingNoSuggestion: false,
+				    		    allowMultiplePaste: true,
+				    		    initValue: json, 
+				    		    validate: function(val) {
+				    		      var values = val.split(',');
+
+				    		      for(var value in values) {
+				    		        value = values[value];
+
+				    		        if(value.indexOf('@') !== -1) {
+				    		          continue;
+				    		        } else {
+				    		          return false;
+				    		        }
+				    		      }
+
+				    		      return true;
+				    		    }
+				    		  });
+
+
+				    	 $("input.tokens-input-text").attr('placeholder', 'Enter emails...');
+				    	 
+				    }   
+				});
+
+	  }
+	});
+	
+	
+	
 }
 $( document ).ready(function() {
 
-	initilize();
+
 	
 	<?php 
 	if (isset($form_instance)){
@@ -46,6 +93,9 @@ $( document ).ready(function() {
 		echo "$('#form-id').val('".$form_instance->getId()."');";
 	}
 	?>
+
+	initilize();
+	
 	
 	
 	$("#email-contact").change();
@@ -102,9 +152,11 @@ function discard_form(){
 		$.ajax({
 			  url: "<?php echo base_url()?>index.php/form/discard/"+$('#form-id')   .val(),
 			  success:function(data) {
-					$('#main-form').html(data);
-						display_msg('info', 'Discarded succesfully');
-						clear_form();
+				  var json = JSON.parse(data);
+						display_msg('info', json.msg);
+						if (json.err == 0){
+							clear_form();
+						}
 			  		}
 		});
 	}
@@ -161,6 +213,41 @@ function send_form(){
     
 }
 
+function share_form(){
+	check=true;
+	msg='';
+	var email = '';
+
+	if ($('#txt-email-share').val()== '' ||$('#txt-email-share').val()=== undefined){ 
+		email = '';
+	}
+	else
+		email = $('#txt-email-share').val(); 
+
+	form1 = $('#form-info')[0];
+	form2 = $('#email-info')[0];
+	
+	if (check==true){
+	    if(form1.checkValidity()){
+	    	$.ajax({
+	  		  type: "POST",
+	  		  url: "<?php echo base_url()?>index.php/form/share/",
+	  		  dataType: "json",
+	  		  data: {form_id: $('#form-id').val(), type_id:$('#cmb-type-id').val(), title:$('#form-title').val(), to_user: email},
+	  		  success:function(data) {
+	  			$('#form-id').val(data);
+				display_msg('info', 'Shared succesfully');				
+	  		  }
+	  	});
+    }
+	    else
+			display_msg ('Warning', 'No form to be shared');
+	}else{
+		display_msg ('Warning', msg);
+	}
+    
+}
+
 function clear_form(){
 	$('#form-id').val("");
 	$('#form-title').val("");
@@ -195,12 +282,12 @@ function save_form(){
     }
 }
 
-function new_message(){
-	$('#new-message').css('display','block');
+function new_message(id){
+	$(id).css('display','block');
 }
 
-function close_new_message(){
-	$('#new-message').css('display','none');
+function close_new_message(id){
+	$(id).css('display','none');
 }
 
 </script>
@@ -229,13 +316,24 @@ function close_new_message(){
 		<div class="col-lg-12">
 			<div class="page-header">
 				<button id='btn-new-message' class="btn btn-primary" type="button"
-					onclick="new_message()">New Message</button>
+					onclick="new_message('#new-message')">New Message</button>
+					<?php if (isset($permission))
+						if ($permission == true){
+						?>
 				<button class="btn btn-success" type="button" onclick="save_form()">Save
 					Form</button>
 				<button class="btn btn-warning" type="button" onclick="clear_form()">Clear
 					Form</button>
 				<button class="btn btn-danger" type="button"
 					onclick='discard_form()'>Discard Form</button>
+					
+<?php }?>
+					<?php if (isset($own))
+						if ($own == true){
+						?>
+					
+				<button type="button" class="btn btn-primary" onclick="new_message('#share-form')">Share Form</button>
+				<?php }?>
 
 			</div>
 		</div>
@@ -249,7 +347,11 @@ function close_new_message(){
 
 			<div id='new-message' class="alert alert-info alert-dismissable"
 				style="display: none; background-color: #f5f5f5; border-color: #ddd">
-				<button type="button" class="close" onclick="close_new_message()">&times;</button>
+				<div class="panel-heading">
+                            <h4>Send messages
+                            				<button type="button" class="close" onclick="close_new_message('#new-message')">&times;</button>
+                            </h4>
+                        </div>
 				<div class="panel-heading">
 					<input type="email" id="txt-email" class="form-control input-sm"
 						placeholder="Type emails here...">
@@ -264,6 +366,28 @@ function close_new_message(){
 				<div class="panel-heading">
 
 					<button class="btn btn-info" id='btn-send' onclick="send_form()">Send</button>
+				</div>
+
+			</div>
+			
+			<div id='share-form' class="alert alert-info alert-dismissable"
+				style="display: none; background-color: #f5f5f5; border-color: #ddd">
+				<div class="panel-heading">
+                            <h4>Share this form
+				<button type="button" class="close" onclick="close_new_message('#share-form')">&times;</button>
+				</h4>
+				</div>
+				<div class="panel-heading">
+					<input type="email" id="txt-email-share" class="form-control input-sm"
+						placeholder="Type emails here...">
+
+				</div>
+				<!-- /.panel-heading -->
+
+				<!-- /.panel-body -->
+				<div class="panel-heading">
+
+					<button class="btn btn-info" id='btn-send' onclick="share_form()">Share</button>
 				</div>
 
 			</div>
@@ -337,8 +461,8 @@ function close_new_message(){
                             }?>
                         </div>
 				<!-- /.panel-heading -->
-				<div class="panel-body">
-					<ul class="chat" id='chat-msg'>
+				<div class="panel-body box">
+					<ul class ='chat' id='chat-msg'>
 						
 					</ul>
 				</div>
@@ -350,7 +474,7 @@ function close_new_message(){
 		<!-- /.col-lg-8 -->
 		<div class="col-lg-4">
 		<?php if (isset($modification_history)){?>
-<div class="table-responsive table-bordered">
+<div class="table-responsive table-bordered box">
 				<table class="table">
 					<thead>
 						<tr>

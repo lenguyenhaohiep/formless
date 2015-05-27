@@ -60,7 +60,7 @@ class Doctrine
             'password' => $db['default']['password'],
             'host' => $db['default']['hostname'],
             'dbname' => $db['default']['database'],
-        	'charset' => 'utf8',
+        	'charset' => 'utf8mb4',
         );
         
         // create the EntityManager

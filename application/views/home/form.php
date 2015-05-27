@@ -22,7 +22,13 @@
                                             <?php if ($this->session->userdata('select') == 'sent') echo "<th>Receiver</th>";?>
                                             <?php if ($this->session->userdata('select') == 'inbox') echo "<th>Sender</th>";?>
                                             
-                                            <th>Date</th>
+                                            <?php if ($this->session->userdata('select') == 'draft') echo "<th>Created Date</th>";
+                                            	else echo "<th>Created Date</th>";
+                                            ?>
+                                            
+                                            <?php if ($this->session->userdata('select') == 'mydocuments') echo "<th>Own/Shared</th>";
+                                            ?>
+                                            
                                             <th>Type</th>
                                         </tr>
                                     </thead>
@@ -39,7 +45,24 @@ if (isset($forms)){
 			echo "<tr class='even gradeX'>";
 		echo "<td><a href='".base_url()."index.php/form/detail/".$form->getId()."'>".$form->getTitle()."</td>";
 		echo "<td>".$form->getCreatedDate()->format("d/m/Y H:i:s")."</td>";
+		if ($this->session->userdata('select') == 'mydocuments') echo "<td>Own</td>";
+		
 		echo "<td>".$form->getType()->getTitle()."</td>";	
+		echo "</tr>";
+		$i = $i+1;
+	}
+	if (isset($shared))
+	foreach ($shared as $item){
+		$form = $item->getForm();
+		if ($i%2==0)
+			echo "<tr class='odd gradeX'>";
+		else
+			echo "<tr class='even gradeX'>";
+		echo "<td><a href='".base_url()."index.php/form/detail/".$form->getId()."'>".$form->getTitle()."</td>";
+		echo "<td>".$form->getCreatedDate()->format("d/m/Y H:i:s")."</td>";
+		if ($this->session->userdata('select') == 'mydocuments') echo "<td>Shared By <b>".$form->getUser()->getFirstName()." ".$form->getUser()->getLastName()."</b> (".$form->getUser()->getEmail().")</td>";
+		
+		echo "<td>".$form->getType()->getTitle()."</td>";
 		echo "</tr>";
 		$i = $i+1;
 	}
@@ -90,8 +113,12 @@ else{
     <script>
     $(document).ready(function() {
         $('#dataTables-example').DataTable({
-                responsive: true,
-                "aaSorting": []
+            <?php if ($this->session->userdata('select') == 'mydocuments') 
+            	echo 'responsive: true';
+            else 
+            	echo 'responsive: true,"aaSorting": []';
+            ?>
+
         });
     });
     </script>

@@ -1,0 +1,20 @@
+Entities\Share:
+  type: entity
+  table: share
+  fields:
+    id:
+      type: integer
+      id: true
+      generator:
+        strategy: AUTO
+  manyToOne:
+    form:
+      targetEntity: Form
+      joinColumns:
+        form_id:
+          referencedColumnName: id
+    user:
+      targetEntity: User
+      joinColumns:
+        user_id:
+          referencedColumnName: id
