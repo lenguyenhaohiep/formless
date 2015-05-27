@@ -58,6 +58,10 @@ class Auth extends CI_Controller {
                 $this->session->set_flashdata('message', $this->ion_auth->messages());
                 
                 $this->session->set_userdata('identity',$this->input->post('identity'));
+                
+                $this->load->model('user_model');
+                $user = $this->user_model->get_user_from_email($this->input->post('identity'));
+                $this->session->set_userdata('username', $user->getFirstName()." ".$user->getLastName());
                 redirect('/', 'refresh');
             } else {
                 //if the login was un-successful

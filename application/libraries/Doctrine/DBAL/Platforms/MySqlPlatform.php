@@ -420,6 +420,7 @@ class MySqlPlatform extends AbstractPlatform
         if (isset($options['charset'])) {
             $optionStrings['charset'] = 'DEFAULT CHARACTER SET ' . $options['charset'];
             if (isset($options['collate'])) {
+            	$options['collate'] = 'utf8_unicode_ci';
                 $optionStrings['charset'] .= ' COLLATE ' . $options['collate'];
             }
         }

@@ -50,4 +50,8 @@
 
 
 <!--Formless CSS Adaptation--> 
-<link href="<?php echo base_url(); ?>/css/formless.css" rel="stylesheet">    
+<link href="<?php echo base_url(); ?>/css/formless.css" rel="stylesheet">   
+
+<!-- New Font -->
+<link href="<?php echo base_url(); ?>/css/SanFranciscoFont/usesf.css" rel="stylesheet">   
+

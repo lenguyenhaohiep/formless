@@ -4,7 +4,8 @@
                 <!-- /.dropdown -->
                 <li class="dropdown">
                     <a href="#" data-toggle="dropdown" class="dropdown-toggle">
-                        <?php echo $this->session->userdata('identity');?>
+                    	<?php echo "<b>".$this->session->userdata('username')."</b> (";?>
+                        <?php echo $this->session->userdata('identity').")";?>
                         <i class="fa fa-user fa-fw"></i>  <i class="fa fa-caret-down"></i>
                         
                     </a>

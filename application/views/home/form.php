@@ -51,17 +51,20 @@ else{
 			echo "<tr class='odd gradeX'>";
 		else
 			echo "<tr class='even gradeX'>";
-		echo "<td><a href='".base_url()."index.php/form/detail/".$form->getForm()->getId()."'>".$form->getForm()->getTitle()."</a></td>";
+		if ($form['count_inbox'] == 0)
+			echo "<td><a href='".base_url()."index.php/form/detail/".$form['form_id']."'>".$form['title']."</a></td>";
+		else 
+			if ($this->session->userdata('select') == 'sent')
+				echo "<td><a href='".base_url()."index.php/form/detail/".$form['form_id']."'>".$form['title']." (".$form['count_inbox'].")</a></td>";
+				
+				else 
+			echo "<td><a href='".base_url()."index.php/form/detail/".$form['form_id']."'><b>".$form['title']." (".$form['count_inbox'].")</b></a></td>";
 		
-		if ($this->session->userdata('select') == 'sent')
-			echo "<td><b>".$form->getToUser()->getFirstName()." ".$form->getToUser()->getLastName()."</b> (".$form->getToUser()->getEmail().")</td>";
-		
-		if ($this->session->userdata('select') == 'inbox')
-			echo "<td><b>".$form->getFromUser()->getFirstName()." ".$form->getFromUser()->getLastName()."</b> (".$form->getFromUser()->getEmail().")</td>";
+			echo "<td><b>".$form['first_name']." ".$form['last_name']."</b> (".$form['email'].")</td>";
 		
 		
-		echo "<td>".$form->getSendDate()->format("d/m/Y H:i:s")."</td>";
-		echo "<td>".$form->getForm()->getType()->getTitle()."</td>";
+		echo "<td>".$form['send_date']."</td>";
+		echo "<td>".$form['t_title']."</td>";
 		$i = $i+1;
 		echo "</tr>";
 		
@@ -87,7 +90,8 @@ else{
     <script>
     $(document).ready(function() {
         $('#dataTables-example').DataTable({
-                responsive: true
+                responsive: true,
+                "aaSorting": []
         });
     });
     </script>

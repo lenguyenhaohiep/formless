@@ -1,6 +1,6 @@
 <script type="text/javascript">
-$( document ).ready(function() {
-
+var current_email = '<?php echo $this->session->userdata('identity');?>';
+function initilize(){
 	$.ajax({
 	     url:"<?php echo base_url()?>index.php/user/get_all_emails",
 	     type:"post",
@@ -32,7 +32,11 @@ $( document ).ready(function() {
 	    	 
 	    		}   
 	});
+}
+$( document ).ready(function() {
 
+	initilize();
+	
 	<?php 
 	if (isset($form_instance)){
 		echo "$('#cmb-type-id').val('".$form_instance->getType()->getId()."');";
@@ -44,10 +48,39 @@ $( document ).ready(function() {
 	?>
 	
 	
-	
+	$("#email-contact").change();
 });
 	
+function display(email,date,message){
+	html = '<li class="left clearfix"><div class="chat-body clearfix"><div class="header">'
+			+' <strong class="primary-font">'+email+'</strong><br/> <small'
+			+' class="text-muted"> <i class="fa fa-clock-o fa-fw"></i>'+date+'</small></div><p>'+message+'</p></div></li>';			
+			$('#chat-msg').append(html);
+			
+}
 
+function load_message(){
+	$.ajax({
+		  url: "<?php echo base_url()?>index.php/form/get_message/",
+		  type: "POST",
+		  dataType: "json",
+		  data: {form_id: $('#form-id').val(), email_contact: $('#email-contact').val() },
+		  success:function(data) {
+			  		$('#chat-msg').html('');
+			        $.each(data, function(i, item){
+			            if (item.from == current_email){
+			            	item.from='you';
+			            	display(item.from,item.date,item.message);
+			            }
+			            else{
+			            	display(item.from,item.date,item.message);
+				            
+			            }
+			        });
+			    }
+		  
+	});
+}
 
   
 function load_form(){
@@ -89,8 +122,8 @@ function display_msg(title,msg){
 function send_form(){
 	check=true;
 	msg='';
-	
-	if ($('#txt-email').val()== ''){ 
+
+	if ($('#txt-email').val()== '' ||$('#txt-email').val()=== undefined){ 
 		check=false;
 		msg += 'Please enter emails <br/>';
 	}
@@ -115,6 +148,8 @@ function send_form(){
 				display_msg('info', 'Sent succesfully, Check inbox for more details');
 				clear_email();
 				clear_form();
+				setTimeout(function(){ window.location.href='<?php echo base_url();?>index.php/home/sent'; }, 2000);
+				
 	  		  }
 	  	});
     }
@@ -136,6 +171,8 @@ function clear_form(){
 function clear_email(){
 	$('#txt-email').val('');
 	$('#txt-message').val('');
+	$('.tokens-list-token-holder').remove();
+	
 }
 
 function save_form(){
@@ -211,25 +248,23 @@ function close_new_message(){
 
 
 			<div id='new-message' class="alert alert-info alert-dismissable"
-				style="display: none; background-color: #f5f5f5">
+				style="display: none; background-color: #f5f5f5; border-color: #ddd">
 				<button type="button" class="close" onclick="close_new_message()">&times;</button>
-					<div class="panel-heading">
-						<input type="email" id="txt-email" class="form-control input-sm"
-							placeholder="Type emails here..." >
+				<div class="panel-heading">
+					<input type="email" id="txt-email" class="form-control input-sm"
+						placeholder="Type emails here...">
 
-					</div>
-					<!-- /.panel-heading -->
-					<div class="panel-body">
-						<textarea rows="5" id='txt-message'
-							placeholder="Type your message here" class="form-control"
-							required></textarea>
-					</div>
-					<!-- /.panel-body -->
-					<div class="panel-heading">
+				</div>
+				<!-- /.panel-heading -->
+				<div class="panel-body">
+					<textarea rows="5" id='txt-message'
+						placeholder="Type your message here" class="form-control" required></textarea>
+				</div>
+				<!-- /.panel-body -->
+				<div class="panel-heading">
 
-						<button class="btn btn-info"
-							id='btn-send' onclick="send_form()">Send</button>
-					</div>
+					<button class="btn btn-info" id='btn-send' onclick="send_form()">Send</button>
+				</div>
 
 			</div>
 
@@ -254,7 +289,7 @@ function close_new_message(){
 						</div>
 						<input type="hidden" id='form-id' value=''> <input type="text"
 							placeholder="Type your document title here..."
-							class="form-control input-sm" id="form-title" required> <input
+							class="form-control" id="form-title" required> <input
 							type="submit" id='submit-form' style="display: none;">
 					</form>
 				</div>
@@ -275,20 +310,57 @@ function close_new_message(){
 
 			<!-- /.panel -->
 		</div>
+		
+		<?php if (isset($list_email)){?>		
+		<div class="col-lg-4">
+			<div class="chat-panel panel panel-default">
+				<div class="panel-heading">
+                        	<?php if (count($list_email) > 0){?>
+										<div class="form-group">
+					                            <i class="fa fa-comments fa-fw"></i>
+					
+					Sender/Receiver 
+					                        </div>
+					
+					<select id='email-contact'
+						onchange='load_message()' class="form-control">
+                            	<?php foreach ($list_email as $email => $value){
+                            		if ($value==1)
+                            			echo "<option value='".$email."' selected>".$email."</option>";
+                            		else                            		
+                            			echo "<option value='".$email."' >".$email."</option>";
+                            	}
+                            	?>
+                            </select>
+                            <?php }else{
+                            	echo "No Communication";
+                            }?>
+                        </div>
+				<!-- /.panel-heading -->
+				<div class="panel-body">
+					<ul class="chat" id='chat-msg'>
+						
+					</ul>
+				</div>
+				<!-- /.panel-footer -->
+			</div>
+			<!-- /.panel .chat-panel -->
+		</div>
+		<?php }?>
 		<!-- /.col-lg-8 -->
 		<div class="col-lg-4">
 		<?php if (isset($modification_history)){?>
 <div class="table-responsive table-bordered">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>First Name</th>
-                                            <th>Last Name</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Date</th>
+							<th>First Name</th>
+							<th>Last Name</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody>
                                     <?php
                                         
                                     foreach ($modification_history as $history){
@@ -306,8 +378,8 @@ function close_new_message(){
                                      
 <?php if (isset($modification_history)){?>
                                     </tbody>
-                                </table>
-                            </div>
+				</table>
+			</div>
                             <?php }?>
 			<!-- /.panel -->
 
@@ -315,6 +387,7 @@ function close_new_message(){
 
 			<!-- /.panel .chat-panel -->
 		</div>
+
 	</div>
 	<!-- /.row -->
 </div>

@@ -28,8 +28,7 @@ class Form_model extends CI_Model{
 			$form->setType($type);
 			$form->setTitle($title);
 			$form->setPathForm($path_form);
-			if ($form_id == null)
-				$form->setStatus($status=0);
+			$form->setStatus($status);
 
 			$form->setCreatedDate(new DateTime());
 			$form->setUser($this->em->find('Entities\User',$this->ion_auth->get_user_id()));
@@ -53,7 +52,9 @@ class Form_model extends CI_Model{
 		$modify->setUser($user);
 		$modify->setModifiedDate(new DateTime());
 		
-		$this->em->persist($form);
+		$this->em->persist($modify);
+		$this->em->flush();
+		
 	}
 	
 	function delete_from($form_id){
@@ -78,7 +79,7 @@ class Form_model extends CI_Model{
 		$sending->setToUser($to_user);
 		$sending->setMessage($message);
 		$sending->setSendDate(new DateTime());
-		$sending->setStatus($status=0);
+		$sending->setStatus($status);
 				
 		$this->em->persist($sending);
 		$result = $this->em->flush();
@@ -88,20 +89,33 @@ class Form_model extends CI_Model{
 	}
 	
 	function get_inbox($user_id){
-		$user = $this->em->find('Entities\User',$user_id);		
-		$inbox = $this->em->getRepository('Entities\Send_history')->findBy(array('status'=>0,'to_user'=>$user),array('send_date'=>'desc'));
+// 		$user = $this->em->find('Entities\User',$user_id);		
+// 		$inbox = $this->em->getRepository('Entities\Send_history')->findBy(array('status'=>1,'to_user'=>$user),array('send_date'=>'desc'));
+		$sql = 'select sum(r.status) count_inbox, r.form_id, f.title, send_date, from_user_id, first_name, last_name, email, t.title t_title
+					from (select * from send_history order by send_date desc) r, form f, users u, type t 
+					where to_user_id='.$user_id.' and from_user_id=u.id and f.id = r.form_id and f.type_id=t.id
+					group by r.form_id,from_user_id 
+					order by send_date desc';
+		$inbox = $this->em->getConnection()->query($sql)->fetchAll();
 		return $inbox;
 	}
 	
 	function get_sent($user_id){
-		$user = $this->em->find('Entities\User',$user_id);
-		$sent = $this->em->getRepository('Entities\Send_history')->findBy(array('status'=>0,'from_user'=>$user),array('send_date'=>'desc'));
+// 		$user = $this->em->find('Entities\User',$user_id);
+// 		$sent = $this->em->getRepository('Entities\Send_history')->findBy(array('status'=>1,'from_user'=>$user),array('send_date'=>'desc'));
+		
+		$sql = 'select count(*) count_inbox, r.form_id, f.title, send_date, to_user_id, first_name, last_name, email, t.title t_title
+					from (select * from send_history order by send_date desc) r, form f, users u, type t
+					where from_user_id='.$user_id.' and to_user_id=u.id and f.id = r.form_id and f.type_id=t.id
+					group by r.form_id,to_user_id
+					order by send_date desc';
+		$sent = $this->em->getConnection()->query($sql)->fetchAll();
 		return $sent;
 	}
 	
 	function get_draft($user_id){
 		$user = $this->em->find('Entities\User',$user_id);
-		$draft = $this->em->getRepository('Entities\Form')->findBy(array('status'=>0,'user'=>$user),array('created_date'=>'desc'));
+		$draft = $this->em->getRepository('Entities\Form')->findBy(array('status'=>0,'user'=>$user),array('created_date'=>'DESC'));
 		return $draft;
 	}
 	
@@ -113,7 +127,8 @@ class Form_model extends CI_Model{
 	
 	function get_history_modification($form_id){
 		$form = $this->em->find('Entities\Form',$form_id);
-		$history = $this->em->getRepository('Entities\Modify_history')->findAll();
+		
+		$history = $this->em->getRepository('Entities\Modify_history')->findByForm($form,array('id','desc'));
 		//findBy(array('form'=>$form),array('id','desc'));
 		return $history;
 	}
@@ -132,4 +147,55 @@ class Form_model extends CI_Model{
 		$form = $this->em->find('Entities\Form',$form_id);
 		return $form;
 	}
+	
+	function get_message_by_email($form_id, $email_contact){
+		$em = $this->doctrine->em;
+		$form = $em->find('Entities\Form',$form_id);
+				
+		$user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
+		$user1 = $em->getRepository('Entities\User')->findOneByEmail($email_contact);
+		
+		$query = $em->createQuery(
+				'SELECT p
+				    FROM Entities\Send_history p
+				    WHERE p.form = :form and ((p.from_user = :user1 and p.to_user= :user) or (p.from_user = :user and p.to_user= :user1))'
+		)
+		->setParameter('form', $form)
+		->setParameter('user1', $user1)
+		->setParameter('user', $user);
+				
+		$send = $query->getResult();
+		return $send;
+	}
+	
+	function get_message($form_id){
+		$em = $this->doctrine->em;
+		$form = $em->find('Entities\Form',$form_id);
+	
+		$user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
+	
+	
+		$query = $em->createQuery(
+				'SELECT p
+				    FROM Entities\Send_history p
+				    WHERE p.form = :form and (p.from_user = :user or p.to_user= :user)'
+		)->setParameter('user', $user)->setParameter('form', $form);
+	
+		$send = $query->getResult();
+		return $send;
+	}
+	
+	function count_unread(){
+		$em = $this->doctrine->em;
+		$user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
+		$inbox = $this->em->getRepository('Entities\Send_history')->findBy(array('status'=>1,'to_user'=>$user),array('send_date'=>'desc'));
+		return count($inbox);
+	}
+	
+	function mark_as_read($form_id, $user_id){
+		$sql = "update send_history set status=0 where form_id = $form_id and to_user_id = $user_id";
+		$this->em->getConnection()->query($sql);
+	}
+	
+
 }

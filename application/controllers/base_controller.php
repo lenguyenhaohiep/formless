@@ -21,6 +21,14 @@ class Base_controller extends CI_Controller {
         }
         
         $this->lang->load('en','english');
+        $this->update_inbox();
+
+    }
+    
+    public function update_inbox(){
+    	$this->load->model('form_model');
+    	$inbox =  $this->form_model->count_unread();
+    	$this->session->set_userdata('inbox',$inbox);
     }
     
     public function load_base(){

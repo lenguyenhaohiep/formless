@@ -53,8 +53,32 @@ ul.tokens-token-list .tokens-list-token-holder{
 
 ul.tokens-token-list .tokens-list-token-holder {
     font-size: 14px;
+    font-weight: 400;
 }
 
 .tokens-input-text {
 	width: 100%;
+}
+
+body {
+    font-family: "San Francisco Text",sans-serif;
+    font-size: 13px;
+}
+
+#main-form{
+	min-height: 800px;
+}
+
+.chat li.left .chat-body {
+	margin-left: 0px;
+}
+
+.chat li.right .chat-body {
+	margin-right: 0px;
+	}
+	
+.chat{
+	min-height: 300px;
+	max-height: 300px;
+	overflow-x: scroll;'
 }
