@@ -1,0 +1,32 @@
+Entities\Certificate:
+  type: entity
+  table: certificate
+  fields:
+    id:
+      type: integer
+      id: true
+      generator:
+        strategy: AUTO
+    secret_key:
+      type: string
+      length: 255
+      nullable: false
+    pubic_key:
+      type: string
+      length: 255
+      nullable: false
+    valid_from:
+      type: datetime
+      nullable: false
+    valid_to:
+      type: datetime
+      nullable: false
+    cert:
+      type: string
+      length: 255
+  oneToOne:
+    user:
+      targetEntity: User
+      joinColumns:
+        user_id:
+          referencedColumnName: id

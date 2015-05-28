@@ -25,4 +25,24 @@ class User_model extends CI_Model{
 		}
 		return $emails;
 	}
+	
+	function get_public_key($user_id){
+		$em = $this->doctrine->em;
+		
+		$user = $em->find('Entities\User',$user_id);
+		$cert = $em->getRepository('Entities\Certificate')->findOneByUser($user);
+		return $em->getPublicKey(); 
+	}
+	
+	function get_secret_key($user_id){
+		$em = $this->doctrine->em;
+	
+		$user = $em->find('Entities\User',$user_id);
+		$cert = $em->getRepository('Entities\Certificate')->findOneByUser($user);
+		return $em->getSecretKey();
+	}
+	
+	function generate_key_pair($key_pass){
+		
+	}
 }

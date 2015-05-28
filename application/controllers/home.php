@@ -50,9 +50,6 @@ class Home extends Base_controller {
         $this->render_page(lang('document_page_title'), "mydocuments", 'home/form', $this->data);
     }
 
-    function signature() {
-        $this->render_page(lang('signature_page_title'), "", 'home/form', '');
-    }
 
     
 
