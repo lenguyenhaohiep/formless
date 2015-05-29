@@ -14,6 +14,7 @@ $lang['form_draft']='Draft';
 
 $lang['search_form']='Search';
 $lang['form_create']='Create';
+$lang['form_design']='Form Designer';
 $lang['user_profile']='User Profile';
 $lang['settings']='Settings';
 $lang['logout']='Logout';

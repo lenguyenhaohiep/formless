@@ -28,7 +28,12 @@
                         </li>
                         <li>
                             <a href="<?php echo base_url();?>index.php/home/mydocuments" class="<?php if ($this->session->userdata('select') == 'mydocuments') echo 'active';?>"><i class="fa  fa-folder-open-o  fa-fw"></i> <?php echo lang('form_mydocument');?></a>
-                        </li>                        
+                        </li>    
+                        
+                                                <li>
+                            <a href="<?php echo base_url();?>index.php/home/design" class="<?php if ($this->session->userdata('select') == 'design') echo 'active';?>"><i class="fa  fa-folder-open-o  fa-fw"></i> <?php echo lang('form_design');?></a>
+                        </li>  
+                                 
                     </ul>
                 </div>
                 <!-- /.sidebar-collapse -->
