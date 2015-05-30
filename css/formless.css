@@ -82,3 +82,24 @@ body {
 	max-height: 300px;
 	overflow-x: scroll;'
 }
+
+.fb-edit-field-wrapper .fb-field-label .field-type .fb-main{
+    font-family: "San Francisco Text",sans-serif;
+}
+.btn{
+	text-transform: uppercase;
+	font-size: 12px;
+}
+.component-form{
+	display: inline-block; 
+	width: auto; 
+	display: -moz-stack;
+	min-width: 250px;
+}
+
+.component-form-button{
+	display: inline-block;
+	display: -moz-stack;
+	width: auto; 
+	padding: 0 5px;
+}

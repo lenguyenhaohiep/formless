@@ -1,21 +1,32 @@
 
 <!-- Bootstrap Core CSS -->
-<link href="<?php echo base_url(); ?>bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+<link
+	href="<?php echo base_url(); ?>bower_components/bootstrap/dist/css/bootstrap.min.css"
+	rel="stylesheet">
 
 <!-- MetisMenu CSS -->
-<link href="<?php echo base_url(); ?>bower_components/metisMenu/dist/metisMenu.min.css" rel="stylesheet">
+<link
+	href="<?php echo base_url(); ?>bower_components/metisMenu/dist/metisMenu.min.css"
+	rel="stylesheet">
 
 <!-- DataTables CSS -->
-<link href="<?php echo base_url(); ?>bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.css" rel="stylesheet">
+<link
+	href="<?php echo base_url(); ?>bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.css"
+	rel="stylesheet">
 
 <!-- DataTables Responsive CSS -->
-<link href="<?php echo base_url(); ?>bower_components/datatables-responsive/css/dataTables.responsive.css" rel="stylesheet">
+<link
+	href="<?php echo base_url(); ?>bower_components/datatables-responsive/css/dataTables.responsive.css"
+	rel="stylesheet">
 
 <!-- Custom CSS -->
-<link href="<?php echo base_url(); ?>dist/css/sb-admin-2.css" rel="stylesheet">
+<link href="<?php echo base_url(); ?>dist/css/sb-admin-2.css"
+	rel="stylesheet">
 
 <!-- Custom Fonts -->
-<link href="<?php echo base_url(); ?>bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+<link
+	href="<?php echo base_url(); ?>bower_components/font-awesome/css/font-awesome.min.css"
+	rel="stylesheet" type="text/css">
 
 <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -28,30 +39,46 @@
 
 
 <!-- jQuery -->
-<script src="<?php echo base_url(); ?>bower_components/jquery/dist/jquery.min.js"></script>
+<script
+	src="<?php echo base_url(); ?>bower_components/jquery/dist/jquery.min.js"></script>
 
 <!-- Bootstrap Core JavaScript -->
-<script src="<?php echo base_url(); ?>bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script
+	src="<?php echo base_url(); ?>bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 
 <!-- Metis Menu Plugin JavaScript -->
-<script src="<?php echo base_url(); ?>bower_components/metisMenu/dist/metisMenu.min.js"></script>
+<script
+	src="<?php echo base_url(); ?>bower_components/metisMenu/dist/metisMenu.min.js"></script>
 
 <!-- DataTables JavaScript -->
-<script src="<?php echo base_url(); ?>bower_components/datatables/media/js/jquery.dataTables.min.js"></script>
-<script src="<?php echo base_url(); ?>bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.min.js"></script>
+<script
+	src="<?php echo base_url(); ?>bower_components/datatables/media/js/jquery.dataTables.min.js"></script>
+<script
+	src="<?php echo base_url(); ?>bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.min.js"></script>
 
 <!-- Custom Theme JavaScript -->
 <script src="<?php echo base_url(); ?>dist/js/sb-admin-2.js"></script>
- 
+
 <!-- jQuery-Tagging-Tokenizer-Input-with-Autocomplete -->
 <script src="<?php echo base_url(); ?>js/tokens.js"></script>
 
-<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>css/tokens.css">
+<link rel="stylesheet" type="text/css"
+	href="<?php echo base_url(); ?>css/tokens.css">
 
 
-<!--Formless CSS Adaptation--> 
-<link href="<?php echo base_url(); ?>/css/formless.css" rel="stylesheet">   
+
 
 <!-- New Font -->
-<link href="<?php echo base_url(); ?>/css/SanFranciscoFont/usesf.css" rel="stylesheet">   
+<link href="<?php echo base_url(); ?>/css/SanFranciscoFont/usesf.css"
+	rel="stylesheet">
+<link rel="stylesheet"
+	href="<?php echo base_url(); ?>vendor/css/vendor.css" />
+<link rel="stylesheet"
+	href="<?php echo base_url(); ?>dist/formbuilder.css" />
+<script src="<?php echo base_url(); ?>vendor/js/vendor.js"></script>
+<script type="text/javascript"> jQuery.noConflict() </script>
+<script src="<?php echo base_url(); ?>dist/formbuilder.js"></script>
 
+
+<!--Formless CSS Adaptation-->
+<link href="<?php echo base_url(); ?>/css/formless.css" rel="stylesheet">

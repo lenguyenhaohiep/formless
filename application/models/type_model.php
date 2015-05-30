@@ -24,4 +24,13 @@ class Type_model extends CI_Model{
 		return $result;
 	}
 	
+	function get_type($type_id){
+		$em = $this->doctrine->em;
+		return $em->find('Entities\Type',$type_id);
+	}
+	
+	function create_file($path, $content){
+		
+	}
+	
 }
