@@ -711,7 +711,7 @@
 
 (function() {
   Formbuilder.registerField('file', {
-    order: 60,
+    order: 45,
     view: "<input type='file' multiple />",
     edit: "",
     addButton: "<span class='symbol'><span class='fa fa-paperclip'></span></span> File"
@@ -777,7 +777,7 @@
 
 (function() {
   Formbuilder.registerField('section', {
-    order: 0,
+    order: 25,
     view: "",
     edit: "",
     addButton: "<span class='symbol'><span class='fa fa-minus'></span></span> Section"
@@ -787,7 +787,7 @@
 
 (function() {
   Formbuilder.registerField('sign', {
-    order: 70,
+    order: 35,
     view: "<input type='file' />",
     edit: "",
     addButton: "<span class='symbol'><span class='fa fa-pencil'></span></span> Sign"
@@ -805,26 +805,6 @@
       attrs.field_options.size = 'small';
       return attrs;
     }
-  });
-
-}).call(this);
-
-(function() {
-  Formbuilder.registerField('time', {
-    order: 25,
-    view: "<div class='input-line'>\n  <span class='hours'>\n    <input type=\"text\" />\n    <label>HH</label>\n  </span>\n\n  <span class='above-line'>:</span>\n\n  <span class='minutes'>\n    <input type=\"text\" />\n    <label>MM</label>\n  </span>\n\n  <span class='above-line'>:</span>\n\n  <span class='seconds'>\n    <input type=\"text\" />\n    <label>SS</label>\n  </span>\n\n  <span class='am_pm'>\n    <select>\n      <option>AM</option>\n      <option>PM</option>\n    </select>\n  </span>\n</div>",
-    edit: "",
-    addButton: "<span class=\"symbol\"><span class=\"fa fa-clock-o\"></span></span> Time"
-  });
-
-}).call(this);
-
-(function() {
-  Formbuilder.registerField('website', {
-    order: 35,
-    view: "<input type='text' placeholder='http://' />",
-    edit: "",
-    addButton: "<span class=\"symbol\"><span class=\"fa fa-link\"></span></span> Website"
   });
 
 }).call(this);

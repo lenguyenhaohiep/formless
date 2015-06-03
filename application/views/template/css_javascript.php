@@ -46,39 +46,15 @@
 <script
 	src="<?php echo base_url(); ?>bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 
-<!-- Metis Menu Plugin JavaScript -->
-<script
-	src="<?php echo base_url(); ?>bower_components/metisMenu/dist/metisMenu.min.js"></script>
-
-<!-- DataTables JavaScript -->
-<script
-	src="<?php echo base_url(); ?>bower_components/datatables/media/js/jquery.dataTables.min.js"></script>
-<script
-	src="<?php echo base_url(); ?>bower_components/datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.min.js"></script>
-
-<!-- Custom Theme JavaScript -->
-<script src="<?php echo base_url(); ?>dist/js/sb-admin-2.js"></script>
-
-<!-- jQuery-Tagging-Tokenizer-Input-with-Autocomplete -->
-<script src="<?php echo base_url(); ?>js/tokens.js"></script>
-
-<link rel="stylesheet" type="text/css"
-	href="<?php echo base_url(); ?>css/tokens.css">
-
-
 
 
 <!-- New Font -->
 <link href="<?php echo base_url(); ?>/css/SanFranciscoFont/usesf.css"
 	rel="stylesheet">
-<link rel="stylesheet"
-	href="<?php echo base_url(); ?>vendor/css/vendor.css" />
-<link rel="stylesheet"
-	href="<?php echo base_url(); ?>dist/formbuilder.css" />
-<script src="<?php echo base_url(); ?>vendor/js/vendor.js"></script>
-<script type="text/javascript"> jQuery.noConflict() </script>
-<script src="<?php echo base_url(); ?>dist/formbuilder.js"></script>
 
+
+<link rel="stylesheet" type="text/css"
+	href="<?php echo base_url(); ?>css/tokens.css">
 
 <!--Formless CSS Adaptation-->
 <link href="<?php echo base_url(); ?>/css/formless.css" rel="stylesheet">

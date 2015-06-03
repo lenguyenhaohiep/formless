@@ -36,7 +36,6 @@ div.tokens-suggestion-selector ul li.tokens-highlighted-suggestion {
 
 div.tokens-suggestion-selector {
     background: #ffffff none repeat scroll 0 0;
-    color: 
 }
 
 ul.tokens-token-list, div.tokens-suggestion-selector {
@@ -80,7 +79,7 @@ body {
 .box{
 	min-height: 300px;
 	max-height: 300px;
-	overflow-x: scroll;'
+	overflow-x: scroll;
 }
 
 .fb-edit-field-wrapper .fb-field-label .field-type .fb-main{
@@ -102,4 +101,81 @@ body {
 	display: -moz-stack;
 	width: auto; 
 	padding: 0 5px;
+}
+
+.form-auto-generate {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+/* Css for table form auto generation  */
+
+.form-auto-generate table {
+    width: 100%;
+}
+.field-required {
+    color: red;
+}
+.form-auto-generate {
+}
+.form-auto-generate td {
+    line-height: 1.42857;
+    padding: 8px;
+}
+.form-auto-generate h4 {
+    border-bottom: 1px solid #1abc9c;
+    color: #1abc9c;
+    font-weight: bold;
+    padding-bottom: 5px;
+}
+.form-auto-generate h3 {
+    color: #1abc9c;
+    font-weight: bold;
+}
+.form-auto-generate input[type="text"], input[type="number"], input[type="email"], textarea {
+    width: 100%;
+}
+.form-auto-generate input[type="checkbox"] {
+    margin-right: 5px;
+}
+.form-auto-generate input[type="radio"] {
+    margin-right: 5px;
+}
+
+.img-data {
+    padding-bottom: 5px;
+    padding-top: 5px;
+}
+.img-data > span {
+    display: inline-block;
+    padding-left: 10px;
+}
+.img-data > span:hover {
+    cursor: zoom-out;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.select-file{
+	margin-left: 20px;
+}
+
+.image-select{
+	border: 1px solid #e7e7e7; 
+	width: 100px; 
+	height: auto;
+}
+
+.image-select:hover{
+    cursor: -webkit-zoom-in; 
+    cursor: -moz-zoom-in;
+}
+
+.form-review .modal-body {
+    max-height: 450px;
+    overflow-x: scroll;
+}
+.form-review {
+    max-width: 800px;
+    width: 80%;
 }

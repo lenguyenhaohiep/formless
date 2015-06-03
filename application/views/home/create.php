@@ -1,105 +1,110 @@
+
+<!-- jQuery-Tagging-Tokenizer-Input-with-Autocomplete -->
+<script src="<?php echo base_url(); ?>js/tokens.js"></script>
+
+
 <script type="text/javascript">
 var current_email = '<?php echo $this->session->userdata('identity');?>';
+var email_share_before = '';
+var email_share_current = '';
+var email_send = '';
+var form_data_before;
+var create_new=false;
+
+
 function initilize(){
 	$.ajax({
-	     url:"<?php echo base_url()?>index.php/user/get_all_emails",
+	     url:"<?php echo base_url() ?>index.php/user/get_all_emails",
 	     type:"post",
 	     dataType: 'json',
-	     success:function(data){
-	    	 $('#txt-email').tokens({
-	    		    source : data,
-	    		    allowAddingNoSuggestion: false,
-	    		    allowMultiplePaste: true,
-	    		    validate: function(val) {
-	    		      var values = val.split(',');
+	     success:function(data) {
+                $('#txt-email').tokens({
+                    source: data,
+                    allowAddingNoSuggestion: false,
+                    allowMultiplePaste: true,
+                    updateValue: function (val) {
+                        email_send = val;
+                    },
+                    validate: function (val) {
+                        var values = val.split(',');
+                        for (var value in values) {
+                            value = values[value];
 
-	    		      for(var value in values) {
-	    		        value = values[value];
+                            if (value.indexOf('@') !== -1) {
+                                continue;
+                            } else {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                });
+                $("input.tokens-input-text").attr('placeholder', 'Enter emails...');
+            }
+        });
+        $.ajax({
+            url: "<?php echo base_url() ?>index.php/form/get_shared_info/",
+            type: "post",
+            dataType: 'json',
+            data: {form_id: $('#form-id').val()},
+            success: function (data) {
+                var json = data;
+                $.ajax({
+                    url: "<?php echo base_url() ?>index.php/user/get_all_emails",
+                    type: "post",
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#txt-email-share').tokens({
+                            source: data,
+                            allowAddingNoSuggestion: false,
+                            allowMultiplePaste: true,
+                            initValue: json,
+                            updateValue: function(val){
+                                email_share_current = val;
+                            },
+                            validate: function (val) {
+                                var values = val.split(',');
 
-	    		        if(value.indexOf('@') !== -1) {
-	    		          continue;
-	    		        } else {
-	    		          return false;
-	    		        }
-	    		      }
+                                for (var value in values) {
+                                    value = values[value];
 
-	    		      return true;
-	    		    }
-	    		  });
+                                    if (value.indexOf('@') !== -1) {
+                                        continue;
+                                    } else {
+                                        return false;
+                                    }
+                                }
+                                email1 = values;
+                                return true;
+                            }
+                        });
 
+                        $("input.tokens-input-text").attr('placeholder', 'Enter emails...');
+                        email_share_before = $('#txt-email-share').val();
+                    }
+                });
 
-	    	 $("input.tokens-input-text").attr('placeholder', 'Enter emails...');
-	    	 
-	    }   
-	});
-	
-	$.ajax({
-	    url: "<?php echo base_url()?>index.php/form/get_shared_info/",
-	    type: "post",
-	    dataType: 'json',
-	    data: {form_id: $('#form-id').val()},
-	     success:function(data){
-			  	var json = (data);
-			     
-			  $.ajax({
-				     url:"<?php echo base_url()?>index.php/user/get_all_emails",
-				     type:"post",
-				     dataType: 'json',
-				     success:function(data){
-				    	 $('#txt-email-share').tokens({
-				    		    source : data,
-				    		    allowAddingNoSuggestion: false,
-				    		    allowMultiplePaste: true,
-				    		    initValue: json, 
-				    		    validate: function(val) {
-				    		      var values = val.split(',');
-
-				    		      for(var value in values) {
-				    		        value = values[value];
-
-				    		        if(value.indexOf('@') !== -1) {
-				    		          continue;
-				    		        } else {
-				    		          return false;
-				    		        }
-				    		      }
-
-				    		      return true;
-				    		    }
-				    		  });
-
-
-				    	 $("input.tokens-input-text").attr('placeholder', 'Enter emails...');
-				    	 
-				    }   
-				});
-
-	  }
-	});
-	
-	
-	
-}
+            }
+        });
+    }
 $( document ).ready(function() {
-
-
-	
-	<?php 
-	if (isset($form_instance)){
-		echo "$('#cmb-type-id').val('".$form_instance->getType()->getId()."');";
-		echo "$('#cmb-type-id').change();";
-		echo "$('#cmb-type-id').prop('disabled',true);";
-		echo "$('#form-title').val('".$form_instance->getTitle()."');";
-		echo "$('#form-id').val('".$form_instance->getId()."');";
-	}
-	?>
-
-	initilize();
-	
-	
-	
-	$("#email-contact").change();
+    <?php
+    if (isset ( $form_instance )) {
+            echo "$('#cmb-type-id').val('" . $form_instance->getType ()->getId () . "');";
+            echo "$('#cmb-type-id').change();";
+            echo "$('#cmb-type-id').prop('disabled',true);";
+            echo "$('#form-title').val('" . $form_instance->getTitle () . "');";
+            echo "$('#form-id').val('" . $form_instance->getId () . "');";
+    }
+    ?>
+    initilize();
+    $("#email-contact").change();
 });
+
+function view_image(img){        
+    window.open(img.src,'_blank');
+}
+
 	
 function display(email,date,message){
 	html = '<li class="left clearfix"><div class="chat-body clearfix"><div class="header">'
@@ -110,35 +115,40 @@ function display(email,date,message){
 }
 
 function load_message(){
-	$.ajax({
-		  url: "<?php echo base_url()?>index.php/form/get_message/",
-		  type: "POST",
-		  dataType: "json",
-		  data: {form_id: $('#form-id').val(), email_contact: $('#email-contact').val() },
-		  success:function(data) {
-			  		$('#chat-msg').html('');
-			        $.each(data, function(i, item){
-			            if (item.from == current_email){
-			            	item.from='you';
-			            	display(item.from,item.date,item.message);
-			            }
-			            else{
-			            	display(item.from,item.date,item.message);
-				            
-			            }
-			        });
-			    }
-		  
-	});
-}
+    $.ajax({
+        url: "<?php echo base_url() ?>index.php/form/get_message/",
+        type: "POST",
+        dataType: "json",
+        data: {form_id: $('#form-id').val(), email_contact: $('#email-contact').val() },
+        success:function(data) {
+            $('#chat-msg').html('');
+                $.each(data, function(i, item){
+                if (item.from == current_email){
+                    item.from='you';
+                    display(item.from,item.date,item.message);
+                }
+                else {
+                    display(item.from, item.date, item.message);
+                }
+              });
+          }
 
-  
+        });
+    }
+
+
 function load_form(){
+    var action='<?php if ($this->session->userdata('select') == 'detail') echo "get_data"; else echo "get_template"; ?>';
+    if (action == 'get_template')
+        create_new = true;
+    var id = <?php if ($this->session->userdata('select') == 'detail') echo $form_id; else echo "$('#cmb-type-id').val()"; ?>;
 	$.ajax({
-		  url: "<?php echo base_url()?>index.php/form/get_template/"+$('#cmb-type-id').val(),
-		  success:function(data) {
-				$('#main-form').html(data);
-		  		      }
+            url: "<?php echo base_url() ?>index.php/form/"+action+"/"+ id,
+            success:function(data) {
+                $('#main-form').html(data);
+                form_data_before = $('#data-form').serialize();
+                    <?php if ($permission == FALSE) echo "$('#data-form :input').attr('disabled', true);"?>
+            }
 	});
 }
 
@@ -148,21 +158,21 @@ function clear_form(){
 
 function discard_form(){
 	form_id = $('#form-id').val();
-	if (form_id != ''){
+	if (form_id !== ''){
 		$.ajax({
-			  url: "<?php echo base_url()?>index.php/form/discard/"+$('#form-id')   .val(),
+			  url: "<?php echo base_url() ?>index.php/form/discard/"+$('#form-id')   .val(),
 			  success:function(data) {
 				  var json = JSON.parse(data);
 						display_msg('info', json.msg);
-						if (json.err == 0){
+						if (json.err === 0){
 							clear_form();
 						}
 			  		}
 		});
 	}
 	else{
-		display_msg('Warning', 'No form to be discarded')	
-		}
+        display_msg('Warning', 'No form to be discarded');	
+	}
 }
 
 function display_msg(title,msg){
@@ -171,16 +181,18 @@ function display_msg(title,msg){
 	$('#myModal').modal();
 }
 
-function send_form(){
+function send_form(){	
+    	var form_data = $('#data-form').serializeArray();
+
 	check=true;
 	msg='';
 
-	if ($('#txt-email').val()== '' ||$('#txt-email').val()=== undefined){ 
+	if (email_send === ''){ 
 		check=false;
 		msg += 'Please enter emails <br/>';
 	}
 
-	if ($('#txt-message').val()== ''){ 
+	if ($('#txt-message').val() === ''){ 
 		check=false;
 		msg += 'Please enter message';
 	}
@@ -188,65 +200,74 @@ function send_form(){
 	form1 = $('#form-info')[0];
 	form2 = $('#email-info')[0];
 	
-	if (check==true){
+	if (check===true){
 	    if(form1.checkValidity()){
+                if (!check_form_edit()){
+                    form_data = "-1";
+                }
+                form_data_before = $('#data-form').serialize();
 	    	$.ajax({
 	  		  type: "POST",
-	  		  url: "<?php echo base_url()?>index.php/form/send/",
+	  		  url: "<?php echo base_url() ?>index.php/form/send/",
 	  		  dataType: "json",
-	  		  data: {form_id: $('#form-id').val(), type_id:$('#cmb-type-id').val(), title:$('#form-title').val(), to_user: $('#txt-email').val(), message: $('#txt-message').val()},
+	  		  data: {form_id: $('#form-id').val(), type_id:$('#cmb-type-id').val(), title:$('#form-title').val(), to_user: email_send, message: $('#txt-message').val(),data_form: form_data},
 	  		  success:function(data) {
 	  			$('#form-id').val(data);
 				display_msg('info', 'Sent succesfully, Check inbox for more details');
 				clear_email();
 				clear_form();
 				setTimeout(function(){ window.location.href='<?php echo base_url();?>index.php/home/sent'; }, 2000);
-				
-	  		  }
-	  	});
+                    }
+                });
+            }
+            else
+                display_msg('Warning', 'No form to be sent');
+        } else {
+            display_msg('Warning', msg);
+        }
+
     }
-	    else
-			display_msg ('Warning', 'No form to be sent');
-	}else{
-		display_msg ('Warning', msg);
-	}
-    
-}
 
 function share_form(){
-	check=true;
-	msg='';
-	var email = '';
+	var form_data = $('#data-form').serializeArray();	
 
-	if ($('#txt-email-share').val()== '' ||$('#txt-email-share').val()=== undefined){ 
-		email = '';
-	}
-	else
-		email = $('#txt-email-share').val(); 
+	check=true;
+
+        if (email_share_current === email_share_before){
+            display_msg('info', 'Shared succesfully');
+            if (check_form_edit())
+                save_form();
+            return;
+        }else{
+            email_share_before = email_share_current;
+        }
 
 	form1 = $('#form-info')[0];
 	form2 = $('#email-info')[0];
 	
-	if (check==true){
+	if (check===true){
 	    if(form1.checkValidity()){
+                if (!check_form_edit()){
+                    form_data = "-1";
+                }
+                form_data_before = $('#data-form').serialize();
 	    	$.ajax({
 	  		  type: "POST",
-	  		  url: "<?php echo base_url()?>index.php/form/share/",
+	  		  url: "<?php echo base_url() ?>index.php/form/share/",
 	  		  dataType: "json",
-	  		  data: {form_id: $('#form-id').val(), type_id:$('#cmb-type-id').val(), title:$('#form-title').val(), to_user: email},
+	  		  data: {form_id: $('#form-id').val(), type_id:$('#cmb-type-id').val(), title:$('#form-title').val(), to_user: email_share_current,data_form: form_data},
 	  		  success:function(data) {
-	  			$('#form-id').val(data);
 				display_msg('info', 'Shared succesfully');				
 	  		  }
 	  	});
     }
-	    else
-			display_msg ('Warning', 'No form to be shared');
-	}else{
-		display_msg ('Warning', msg);
-	}
-    
-}
+            else
+                display_msg('Warning', 'No form to be shared');
+        } else {
+            display_msg('Warning', msg);
+        }
+
+    }
 
 function clear_form(){
 	$('#form-id').val("");
@@ -262,16 +283,42 @@ function clear_email(){
 	
 }
 
+function check_form_edit(){
+    if (create_new){
+        create_new=false;
+        console.log('create-new');
+        return true;
+    }
+    //if not edit
+    if ($('#data-form').serialize() === form_data_before){
+        console.log('content-no-changed');
+        return false;
+    } else{
+        //if edit
+        console.log('content-changed');
+        return true;
+    }
+}
+
 function save_form(){
+	var form_data = $('#data-form').serializeArray();	        
 	$('#submit-form').click();
 
 	form = $('#form-info')[0];
 	    if(form.checkValidity()){
+                if (!check_form_edit()){
+                    display_msg('info', 'Saved succesfully');
+                    return;
+                }
+                form_data_before = $('#data-form').serialize();
 	    	$.ajax({
 	  		  type: "POST",
 	  		  url: "<?php echo base_url()?>index.php/form/save/",
 	  		  dataType: "json",
-	  		  data: {form_id: $('#form-id').val(), type_id:$('#cmb-type-id').val(), title:$('#form-title').val()},
+	  		  data: {	form_id: $('#form-id').val(), 
+		  		  		type_id:$('#cmb-type-id').val(), 
+		  		  		title:$('#form-title').val(),
+		  		  		data_form: form_data},
 	  		  success:function(data) {
 		  		  if (data != ''){
 	  			  	$('#form-id').val(data);
@@ -283,12 +330,53 @@ function save_form(){
 }
 
 function new_message(id){
+        $('.form-modal').css('display','none');
 	$(id).css('display','block');
 }
 
 function close_new_message(id){
 	$(id).css('display','none');
 }
+
+
+var i=0;
+
+function delete_img(id){
+	$('#'+id).remove();
+}
+
+function create_line_image(button,source, name){
+	  id_button = $(button).attr('id');
+	  div_data = $('#'+ $(button).attr('id')+'-data'); 
+	  id_img_data = $(button).attr('id')+"-"+i;
+	  
+	  $(div_data).append("<div class='img-data' id='"+id_img_data+"-div' ><img class='image-select' /></div>");		  
+	  img = '#'+id_img_data + '-div img';
+	  $(img).attr("src",source);
+	  $(img).after('<button class="btn btn-danger select-file" type="button" onclick="delete_img(\''+id_img_data+'-div\');">Delete</button>');
+	  $(img).after('<span>'+name+'</span><br/>');
+	  $(button).after('<input type="checkbox" checked name="'+id_button+'" value="'+ source +'" style="display: none">');
+	  
+	  i++;
+}
+
+function process_upload(button, type) {
+	  if (type==1){
+		  $('#'+ $(button).attr('id')+'-data').html('');
+	  }
+	  var files = button.files; 
+	  if(files==null) return;
+	  for (var i = 0; i < files.length; i++) { //for multiple files          
+	    (function(file) {
+	        var name = file.name;
+	        var reader = new FileReader();  
+	        reader.onload = function(e) {  
+	        	create_line_image(button,e.target.result, name);
+	        }
+	        reader.readAsDataURL(file);
+	    })(files[i]);
+	  }
+	}
 
 </script>
 <div id="page-wrapper" style="min-height: 275px;">
@@ -317,24 +405,28 @@ function close_new_message(id){
 			<div class="page-header">
 				<button id='btn-new-message' class="btn btn-primary" type="button"
 					onclick="new_message('#new-message')">New Message</button>
-					<?php if (isset($permission))
-						if ($permission == true){
-						?>
-				<button class="btn btn-success" type="button" onclick="save_form()">Save
-					Form</button>
-				<button class="btn btn-warning" type="button" onclick="clear_form()">Clear
-					Form</button>
+					<?php
+					
+if (isset ( $permission ))
+						if ($permission == true) {
+							?>
+				<button class="btn btn-success" type="button" onclick="save_form()">Save</button>
+				<button class="btn btn-warning" type="button" onclick="clear_form()">Clear</button>
 				<button class="btn btn-danger" type="button"
-					onclick='discard_form()'>Discard Form</button>
+					onclick='discard_form()'>Discard</button>
 					
 <?php }?>
-					<?php if (isset($own))
-						if ($own == true){
-						?>
+					<?php
 					
-				<button type="button" class="btn btn-primary" onclick="new_message('#share-form')">Share Form</button>
+if (isset ( $own ))
+						if ($own == true) {
+							?>
+					
+				<button type="button" class="btn btn-primary"
+					onclick="new_message('#share-form')">Share</button>
 				<?php }?>
-
+                            				<button class="btn btn-success" type="button" onclick="download_form()">Download</button>
+		<button class="btn btn-warning" type="button" onclick="fill_form()">Auto-Fill</button>
 			</div>
 		</div>
 
@@ -345,13 +437,15 @@ function close_new_message(id){
 		<div class="col-lg-8">
 
 
-			<div id='new-message' class="alert alert-info alert-dismissable"
+			<div id='new-message' class="form-modal alert alert-info alert-dismissable"
 				style="display: none; background-color: #f5f5f5; border-color: #ddd">
 				<div class="panel-heading">
-                            <h4>Send messages
-                            				<button type="button" class="close" onclick="close_new_message('#new-message')">&times;</button>
-                            </h4>
-                        </div>
+					<h4>
+						Send messages
+						<button type="button" class="close"
+							onclick="close_new_message('#new-message')">&times;</button>
+					</h4>
+				</div>
 				<div class="panel-heading">
 					<input type="email" id="txt-email" class="form-control input-sm"
 						placeholder="Type emails here...">
@@ -369,17 +463,19 @@ function close_new_message(id){
 				</div>
 
 			</div>
-			
-			<div id='share-form' class="alert alert-info alert-dismissable"
+
+			<div id='share-form' class="form-modal alert alert-info alert-dismissable"
 				style="display: none; background-color: #f5f5f5; border-color: #ddd">
 				<div class="panel-heading">
-                            <h4>Share this form
-				<button type="button" class="close" onclick="close_new_message('#share-form')">&times;</button>
-				</h4>
+					<h4>
+						Share this form
+						<button type="button" class="close"
+							onclick="close_new_message('#share-form')">&times;</button>
+					</h4>
 				</div>
 				<div class="panel-heading">
-					<input type="email" id="txt-email-share" class="form-control input-sm"
-						placeholder="Type emails here...">
+					<input type="email" id="txt-email-share"
+						class="form-control input-sm" placeholder="Type emails here..." value="">
 
 				</div>
 				<!-- /.panel-heading -->
@@ -401,13 +497,13 @@ function close_new_message(id){
 								onchange="load_form()">
 								<option value=''>Please Select Document</option>
                                         <?php
-                                        foreach ($group_types as $group){
-                                        	echo "<optgroup label='$group[0]'>";
-                                        	foreach ($group[1] as $type)
-                                        		echo "<option value='".$type->getId()."'>".$type->getTitle()."</option>";
-                                        	echo "</optgroup>";
-                                        } 
-                                        ?>
+																																								foreach ( $group_types as $group ) {
+																																									echo "<optgroup label='$group[0]'>";
+																																									foreach ( $group [1] as $type )
+																																										echo "<option value='" . $type->getId () . "'>" . $type->getTitle () . "</option>";
+																																									echo "</optgroup>";
+																																								}
+																																								?>
                                     </select>
 
 						</div>
@@ -420,9 +516,7 @@ function close_new_message(id){
 				<!-- /.panel-heading -->
 				<div class="panel-body">
 					<div class="row">
-						<div class="col-lg-6">
-							<div id="main-form"></div>
-						</div>
+						<div id="main-form"></div>
 						<!-- /.col-lg-6 (nested) -->
 					</div>
 				</div>
@@ -441,29 +535,32 @@ function close_new_message(id){
 				<div class="panel-heading">
                         	<?php if (count($list_email) > 0){?>
 										<div class="form-group">
-					                            <i class="fa fa-comments fa-fw"></i>
-					
-					Sender/Receiver 
-					                        </div>
-					
-					<select id='email-contact'
-						onchange='load_message()' class="form-control">
-                            	<?php foreach ($list_email as $email => $value){
-                            		if ($value==1)
-                            			echo "<option value='".$email."' selected>".$email."</option>";
-                            		else                            		
-                            			echo "<option value='".$email."' >".$email."</option>";
-                            	}
-                            	?>
+						<i class="fa fa-comments fa-fw"></i> Sender/Receiver
+					</div>
+
+					<select id='email-contact' onchange='load_message()'
+						class="form-control">
+                            	<?php
+				
+foreach ( $list_email as $email => $value ) {
+					if ($value == 1)
+						echo "<option value='" . $email . "' selected>" . $email . "</option>";
+					else
+						echo "<option value='" . $email . "' >" . $email . "</option>";
+				}
+				?>
                             </select>
-                            <?php }else{
-                            	echo "No Communication";
-                            }?>
+                            <?php
+			
+} else {
+				echo "No Communication";
+			}
+			?>
                         </div>
 				<!-- /.panel-heading -->
 				<div class="panel-body box">
-					<ul class ='chat' id='chat-msg'>
-						
+					<ul class='chat' id='chat-msg'>
+
 					</ul>
 				</div>
 				<!-- /.panel-footer -->
@@ -486,18 +583,19 @@ function close_new_message(id){
 					</thead>
 					<tbody>
                                     <?php
-                                        
-                                    foreach ($modification_history as $history){
-                                    	echo "<tr><td>".$history->getModifiedDate()->format("d/m/Y H:i:s")."</td>";
-                                    	echo "<td>".$history->getUser()->getFirstName()."</td>";
-                                    	echo "<td>".$history->getUser()->getLastName()."</td>";
-                                    	echo "<td>Modified</td></tr>";
-                                    }
-                                    echo "<tr><td>".$form_instance->getCreatedDate()->format("d/m/Y H:i:s")."</td>";
-                                    echo "<td>".$form_instance->getUser()->getFirstName()."</td>";
-                                    echo "<td>".$form_instance->getUser()->getLastName()."</td>";
-                                    echo "<td>Created</td></tr>";
-                                        }?>
+			
+			foreach ( $modification_history as $history ) {
+				echo "<tr><td>" . $history->getModifiedDate ()->format ( "d/m/Y H:i:s" ) . "</td>";
+				echo "<td>" . $history->getUser ()->getFirstName () . "</td>";
+				echo "<td>" . $history->getUser ()->getLastName () . "</td>";
+				echo "<td>Modified</td></tr>";
+			}
+			echo "<tr><td>" . $form_instance->getCreatedDate ()->format ( "d/m/Y H:i:s" ) . "</td>";
+			echo "<td>" . $form_instance->getUser ()->getFirstName () . "</td>";
+			echo "<td>" . $form_instance->getUser ()->getLastName () . "</td>";
+			echo "<td>Created</td></tr>";
+		}
+		?>
 
                                      
 <?php if (isset($modification_history)){?>
@@ -515,3 +613,14 @@ function close_new_message(id){
 	</div>
 	<!-- /.row -->
 </div>
+
+
+
+<?php if ($own == FALSE){?>
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#form-title').attr('disabled', true);  
+    
+});
+</script>
+<?php } ?>

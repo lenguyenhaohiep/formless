@@ -219,6 +219,9 @@
 
         callback.apply(this,[suggestions]);
       },
+      updateValue : function(value){
+          return true;
+      },
       validate : function(query) {
         return true;
       },
@@ -534,6 +537,7 @@
     },
     _updateValue : function() {
       this.el.val(this.currentValue.join(', '));
+      this.updateValue(this.el.val());
     },
     _getTextFromNode : function($node){
       return $node.find('p').text();

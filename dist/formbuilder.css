@@ -32,7 +32,7 @@
 .fb-main {
 	max-width: 1000px;
 	margin: 0 auto;
-	padding: 0 20px 0 0;
+/* 	padding: 0 20px 0 0; */
 	position: relative;
 	font-family: "San Francisco Text",sans-serif, 'Source Sans Pro', 'Open Sans', Tahoma
 }

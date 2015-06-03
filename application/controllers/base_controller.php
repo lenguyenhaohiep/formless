@@ -17,7 +17,7 @@ class Base_controller extends CI_Controller {
         parent::__construct();
         //check login first
         if (!$this->ion_auth->logged_in()){
-            redirect('auth/login','refresh');
+            redirect('auth/','refresh');
         }
         
         $this->lang->load('en','english');

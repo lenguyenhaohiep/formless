@@ -33,4 +33,26 @@ class Type_model extends CI_Model{
 		
 	}
 	
+	function update_template($type_id, $template){
+		$em = $this->doctrine->em;
+		$type = $em->find('Entities\Type', $type_id);
+		
+		if ($type!=null){
+			$type->setPathTemplate($template);
+			$em->persist($type);
+			$em->flush();
+		}
+		
+		return $type;
+	}
+        
+        function discard_template($type_id){
+            $em = $this->doctrine->em;
+            $type = $em->find('Entities\Type', $type_id);
+            $form = $em->getRepository('Entities\Form')->findByType($type);
+            if (count ($form) > 0)
+                return FALSE;
+            return TRUE;
+        }
+	
 }
