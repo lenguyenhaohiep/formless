@@ -48,6 +48,49 @@
                             }
                         });
     }
+    
+    function load_template_attr(){
+            $.ajax({
+            type: "POST",
+            url: "<?php echo base_url() ?>index.php/template/get_attr/" + $('#template-relate').val(),
+            dataType: 'json',
+            success: function (data) {
+                var txt;
+                if ($('#template-relate').val()=='')
+                    txt = 'Please select template to define';
+                else
+                    txt = 'Please select field';
+                var option='<option value="">'+txt+'</option>';
+                $.each(data, function (i, item){
+                    $.each(item, function (key, value){
+                        option += '<option value="'+key+'">'+value+'</option>';
+                    });
+                });
+                $.each(attrs_current, function (i, item){                   
+                    $.each(item, function (key, value){
+                        var select =  $(document.getElementById(key));
+                        select.empty();
+                        select.append(option);
+                    });
+
+                });
+                
+                //load current relation
+                $.ajax({
+                    type:"GET",
+                    url : "<?php echo base_url()?>index.php/template/get_relation/"+$('#cmb-type-id').val()+"/"+$('#template-relate').val(),
+                    dataType: 'json',
+                    success: function(data){
+                        $.each(data, function(key,item){
+                            var select =  $(document.getElementById(key));
+                            if (select !== undefined)
+                                select.val(item);
+                        });
+                    }
+                });
+            }
+        });
+    }
 
     function load_template() {
         $.ajax({
@@ -109,24 +152,32 @@
             display_msg('Warning', 'Please Select Template');
             return;
         }
+        $('#template-relate').val('');
+        $('#template-relate option').css('display','block');
+        $('#template-relate option[value='+$('#cmb-type-id').val()+']').css('display','none');
         $.ajax({
             type: "GET",
             url: '<?php echo base_url();?>index.php/template/get_attr/'+$('#cmb-type-id').val(),
             dataType: "json",
             success: function(data){
+                $('#body-template-attr').empty();
                 attrs_current = data;
                 $.each(data, function (i, item){
                     $.each(item, function (key, value){
-                        console.log(key,value);
                         tr = $('<tr>');
                         tr.append($('<td>').html(value));
-                        $('#lst-attr').append(tr);                        
+                        td2 = $('<td>');
+                        txt = 'Please select template to define';
+                        td2.append($('<select>',{id: key, name: key}).append($('<option>',{value:''}).html(txt)));
+                        tr.append(td2);
+                        $('#body-template-attr').append(tr);
+
                     });
 
                 });
             }
         });
-        new_message('#new-relation');
+        jq('#form-relation').modal();
     }
 
     function reset_template(_bootstrapData) {
@@ -148,10 +199,75 @@
             });
         });
     }
+    
+    function define_form(){
+        $('#submit-relation').click();
+        form = $('#form-relation-data')[0];
+        if (form.checkValidity()){
+            $.ajax({
+                type: "POST",
+                url : "<?php echo base_url() ?>index.php/template/relation",
+                data: {type_id1: $('#cmb-type-id').val(), type_id2: $('#template-relate').val(), data: $('#form-relation-data').serializeArray()},
+                success: function(data){
+                    display_msg('info', data);
+                }
+            });
+        }
+    }
 
 
 </script>
 <div id="page-wrapper">
+    
+        <div class="modal fade" id="form-relation" tabindex="-1" role="dialog"
+         aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog form-review">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabelForm">Define Form Relation</h4>
+                </div>
+                <div class="modal-body" id='form-relation-content'>
+                    <form id='form-relation-data' onsubmit="return false">
+                    <input id='submit-relation' type="submit" style="display: none" value='submit'>
+                    <table id='lst-attr' class='form-auto-generate'>
+                        <thead>
+                        <tr>
+                            <th style="width: auto;min-width:270px">Your Current Template's fields</th>
+                                    <th>Template related 's fields
+                    <select id='template-relate' required
+                            onchange="load_template_attr()">
+                        <option value=''>Please Select Document</option>
+                        <?php
+                        foreach ($group_types as $group) {
+                            echo "<optgroup label='$group[0]'>";
+                            foreach ($group[1] as $type)
+                                echo "<option value='" . $type->getId() . "'>" . $type->getTitle() . "</option>";
+                            echo "</optgroup>";
+                        }
+                        ?>
+                    </select>
+                                    </th>
+                        </thead>
+                        <tbody id = 'body-template-attr'>
+                            
+                        </tbody>
+                                    </td>
+                        </tr>
+                    </table>
+                </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-info" id='btn-send' onclick="define_form()">Define</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    
     <div class="modal fade" id="form-preview" tabindex="-1" role="dialog"
          aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog form-review">
@@ -161,7 +277,9 @@
                             aria-hidden="true">&times;</button>
                     <h4 class="modal-title" id="myModalLabelForm">Preview</h4>
                 </div>
-                <div class="modal-body" id='form-message-content'></div>
+                <div class="modal-body" id='form-message-content'>
+
+                </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
@@ -204,45 +322,6 @@
                     onclick="preview_form()">Preview</button>
         </div>
 
-        <div id='new-relation' class="alert alert-info alert-dismissable"
-             style="display: none; background-color: #f5f5f5; border-color: #ddd">
-            <div class="panel-heading">
-                <h4>Relations between forms
-                    <button type="button" class="close" onclick="close_new_message('#new-relation')">&times;</button>
-                </h4>
-            </div>
-
-            <!-- /.panel-heading -->
-            <div class="panel-body">
-                <form id='form-relation'>
-                    <table id='lst-attr'>
-                        <tr>
-                            <td>Your Current Template</td>
-                                    <td>
-                    <select id='template-relate' required
-                            onchange="load_template_attr()">
-                        <option value=''>Please Select Document</option>
-                        <?php
-                        foreach ($group_types as $group) {
-                            echo "<optgroup label='$group[0]'>";
-                            foreach ($group[1] as $type)
-                                echo "<option value='" . $type->getId() . "'>" . $type->getTitle() . "</option>";
-                            echo "</optgroup>";
-                        }
-                        ?>
-                    </select>
-                                    </td>
-                        </tr>
-                    </table>
-                </form>
-            </div>
-            <!-- /.panel-body -->
-            <div class="panel-heading">
-
-                <button class="btn btn-info" id='btn-send' onclick="send_form()">Define</button>
-            </div>
-
-        </div>
 
         <div class="panel-heading">
             <form id='form-info' onsubmit="return false">

@@ -25,6 +25,11 @@ class Form
     private $path_form;
 
     /**
+     * @var string $data
+     */
+    private $data;
+
+    /**
      * @var datetime $created_date
      */
     private $created_date;
@@ -97,6 +102,28 @@ class Form
     public function getPathForm()
     {
         return $this->path_form;
+    }
+
+    /**
+     * Set data
+     *
+     * @param string $data
+     * @return Form
+     */
+    public function setData($data)
+    {
+        $this->data = $data;
+        return $this;
+    }
+
+    /**
+     * Get data
+     *
+     * @return string 
+     */
+    public function getData()
+    {
+        return $this->data;
     }
 
     /**

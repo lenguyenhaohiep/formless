@@ -25,6 +25,11 @@ class Type
     private $path_template;
 
     /**
+     * @var string $data
+     */
+    private $data;
+
+    /**
      * @var Entities\Group_type
      */
     private $group_type;
@@ -82,6 +87,28 @@ class Type
     public function getPathTemplate()
     {
         return $this->path_template;
+    }
+
+    /**
+     * Set data
+     *
+     * @param string $data
+     * @return Type
+     */
+    public function setData($data)
+    {
+        $this->data = $data;
+        return $this;
+    }
+
+    /**
+     * Get data
+     *
+     * @return string 
+     */
+    public function getData()
+    {
+        return $this->data;
     }
 
     /**

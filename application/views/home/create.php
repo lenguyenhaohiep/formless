@@ -13,6 +13,27 @@ var create_new=false;
 
 
 function initilize(){
+    
+    //Load your form
+    $.ajax({
+        type: 'POST',
+        url: "<?php echo base_url()?>index.php/form/get_your_form",
+        dataType: 'json',
+        success: function (data) {
+            $.each(data,function(k,v){
+                $.each(v,function (k1,v1){
+                    opt = $('<optgroup>',{label:k1});
+                    $.each(v1,function(k2,v2){
+                        //option with value type_id/form_id
+                        option = $('<option>',{value:k+'/'+ k2}).html(v2);
+                        opt.append(option);
+                    });
+                    $('#template-relate').append(opt);
+                });
+            });
+        }
+    });
+    
 	$.ajax({
 	     url:"<?php echo base_url() ?>index.php/user/get_all_emails",
 	     type:"post",
@@ -22,6 +43,7 @@ function initilize(){
                     source: data,
                     allowAddingNoSuggestion: false,
                     allowMultiplePaste: true,
+                    suggestionsZindex: 19999,
                     updateValue: function (val) {
                         email_send = val;
                     },
@@ -58,6 +80,7 @@ function initilize(){
                             source: data,
                             allowAddingNoSuggestion: false,
                             allowMultiplePaste: true,
+                            suggestionsZindex: 19999,
                             initValue: json,
                             updateValue: function(val){
                                 email_share_current = val;
@@ -233,20 +256,19 @@ function share_form(){
 
 	check=true;
 
-        if (email_share_current === email_share_before){
-            display_msg('info', 'Shared succesfully');
-            if (check_form_edit())
-                save_form();
-            return;
-        }else{
-            email_share_before = email_share_current;
-        }
-
 	form1 = $('#form-info')[0];
 	form2 = $('#email-info')[0];
 	
 	if (check===true){
 	    if(form1.checkValidity()){
+                if (email_share_current === email_share_before){
+                display_msg('info', 'Shared succesfully');
+                if (check_form_edit())
+                    save_form();
+                return;
+            }else{
+                email_share_before = email_share_current;
+            }
                 if (!check_form_edit()){
                     form_data = "-1";
                 }
@@ -329,9 +351,95 @@ function save_form(){
     }
 }
 
+    function define_relation(){
+        if ($('#cmb-type-id').val() == ''){
+            display_msg('Warning', 'Please Select Template');
+            return;
+        }
+        $('#template-relate').val('');
+        $('#template-relate option').css('display','block');
+        if ($('#form-id').val() !== '')
+            $('#template-relate option[value='+$('#form-id').val()+']').css('display','none');
+        $.ajax({
+            type: "GET",
+            url: '<?php echo base_url();?>index.php/template/get_attr/'+$('#cmb-type-id').val(),
+            dataType: "json",
+            success: function(data){
+                $('#body-template-attr').empty();
+                attrs_current = data;
+                $.each(data, function (i, item){
+                    $.each(item, function (key, value){
+                        tr = $('<tr>');
+                        tr.append($('<td>').html(value));
+                        td2 = $('<td>');
+                        txt = 'Please select form to fill';
+                        td2.append($('<select>',{id: key, name: key}).append($('<option>',{value:''}).html(txt)));
+                        tr.append(td2);
+                        $('#body-template-attr').append(tr);
+
+                    });
+
+                });
+            }
+        });
+        $('#fill-form').modal();
+    }
+    
+    function load_template_attr(){
+            $.ajax({
+            type: "POST",
+            url: "<?php echo base_url() ?>index.php/form/get_attr/" + $('#template-relate').val(),
+            dataType: 'json',
+            success: function (data) {
+                var txt;
+                if ($('#template-relate').val()=='')
+                    txt = 'Please select form to fill';
+                else
+                    txt = 'Please select field';
+                var option='<option value="">'+txt+'</option>';
+                $.each(data, function (i, item){
+                    $.each(item, function (key, value){
+                        option += '<option value="'+key+'">'+value+'</option>';
+                    });
+                });
+                $.each(attrs_current, function (i, item){                   
+                    $.each(item, function (key, value){
+                        var select =  $(document.getElementById(key));
+                        select.empty();
+                        select.append(option);
+                    });
+
+                });
+                
+                //load current relation
+                $.ajax({
+                    type:"GET",
+                    url : "<?php echo base_url()?>index.php/form/fill/"+$('#cmb-type-id').val()+"/"+$('#template-relate').val(),
+                    dataType: 'json',
+                    success: function(data){
+                        $.each(data, function(key,item){
+                            var select =  $(document.getElementById(key));
+                            if (select !== undefined)
+                                select.val(item);
+                        });
+                    }
+                });
+            }
+        });
+    }
+
 function new_message(id){
-        $('.form-modal').css('display','none');
-	$(id).css('display','block');
+        //$('.form-modal').css('display','none');
+	//$(id).css('display','block');
+        var msg = '';
+        if ($('#cmb-type-id').val()==='')
+            msg += 'Please choose your document </br>';
+        if ($('#form-title').val()==='')
+            msg += 'Please enter the title document';
+        if (msg === '')    
+            $(id).modal();
+        else
+            display_msg('Warning', msg);
 }
 
 function close_new_message(id){
@@ -381,6 +489,105 @@ function process_upload(button, type) {
 </script>
 <div id="page-wrapper" style="min-height: 275px;">
 	<!-- Modal -->
+        <div class="modal fade" id="new-message" tabindex="-1" role="dialog"
+             aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog form-review">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"
+                                aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabelForm">Send Messages</h4>
+                    </div>
+                    <div class="modal-body" id='form-message-content'>
+                        <div class="panel-heading">
+
+                            <input type="email" id="txt-email" class="form-control input-sm"
+                                   placeholder="Type emails here...">
+                        </div>
+
+                        <div class="panel-body">
+                            <textarea rows="15" id='txt-message'
+                                      placeholder="Type your message here" class="form-control" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-info" id='btn-send' onclick="send_form()">Send</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        
+                <div class="modal fade" id="share-form" tabindex="-1" role="dialog"
+             aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog form-review">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"
+                                aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabelForm">Share form</h4>
+                    </div>
+                    <div class="modal-body" id='form-message-content'>
+				<div class="panel-heading">
+					<input type="email" id="txt-email-share"
+						class="form-control input-sm" placeholder="Type emails here..." value="">
+
+				</div>
+                    </div>
+                    <div class="modal-footer">
+					<button class="btn btn-info" id='btn-send' onclick="share_form()">Share</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+
+        <div class="modal fade" id="fill-form" tabindex="-1" role="dialog"
+             aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog form-review">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"
+                                aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabelForm">Auto-Fill form</h4>
+                    </div>
+                    <div class="modal-body" id='form-message-content'>
+                    <form id='form-relation-data' onsubmit="return false">
+                    <input id='submit-relation' type="submit" style="display: none" value='submit'>
+                    <table id='lst-attr' class='form-auto-generate'>
+                        <thead>
+                        <tr>
+                            <th style="width: auto;min-width:270px">Your Current Form's fields</th>
+                                    <th>Form related 's fields
+                    <select id='template-relate' required
+                            onchange="load_template_attr()">
+                        <option value=''>Please Select Previous Form to Auto-Fill</option>
+                    </select>
+                                    </th>
+                        </thead>
+                        <tbody id = 'body-template-attr'>
+                            
+                        </tbody>
+                                    </td>
+                        </tr>
+                    </table>
+                </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-info" id='btn-send' onclick="fill_form()">Auto-Fill</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        
+        
 	<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
 		aria-labelledby="myModalLabel" aria-hidden="true">
 		<div class="modal-dialog" style="width: 300px">
@@ -426,7 +633,7 @@ if (isset ( $own ))
 					onclick="new_message('#share-form')">Share</button>
 				<?php }?>
                             				<button class="btn btn-success" type="button" onclick="download_form()">Download</button>
-		<button class="btn btn-warning" type="button" onclick="fill_form()">Auto-Fill</button>
+                                                        <button class="btn btn-warning" type="button" onclick="define_relation()">Auto-Fill</button>
 			</div>
 		</div>
 
@@ -435,58 +642,6 @@ if (isset ( $own ))
 	<!-- /.row -->
 	<div class="row">
 		<div class="col-lg-8">
-
-
-			<div id='new-message' class="form-modal alert alert-info alert-dismissable"
-				style="display: none; background-color: #f5f5f5; border-color: #ddd">
-				<div class="panel-heading">
-					<h4>
-						Send messages
-						<button type="button" class="close"
-							onclick="close_new_message('#new-message')">&times;</button>
-					</h4>
-				</div>
-				<div class="panel-heading">
-					<input type="email" id="txt-email" class="form-control input-sm"
-						placeholder="Type emails here...">
-
-				</div>
-				<!-- /.panel-heading -->
-				<div class="panel-body">
-					<textarea rows="5" id='txt-message'
-						placeholder="Type your message here" class="form-control" required></textarea>
-				</div>
-				<!-- /.panel-body -->
-				<div class="panel-heading">
-
-					<button class="btn btn-info" id='btn-send' onclick="send_form()">Send</button>
-				</div>
-
-			</div>
-
-			<div id='share-form' class="form-modal alert alert-info alert-dismissable"
-				style="display: none; background-color: #f5f5f5; border-color: #ddd">
-				<div class="panel-heading">
-					<h4>
-						Share this form
-						<button type="button" class="close"
-							onclick="close_new_message('#share-form')">&times;</button>
-					</h4>
-				</div>
-				<div class="panel-heading">
-					<input type="email" id="txt-email-share"
-						class="form-control input-sm" placeholder="Type emails here..." value="">
-
-				</div>
-				<!-- /.panel-heading -->
-
-				<!-- /.panel-body -->
-				<div class="panel-heading">
-
-					<button class="btn btn-info" id='btn-send' onclick="share_form()">Share</button>
-				</div>
-
-			</div>
 
 			<div class="panel panel-default">
 
@@ -538,11 +693,10 @@ if (isset ( $own ))
 						<i class="fa fa-comments fa-fw"></i> Sender/Receiver
 					</div>
 
-					<select id='email-contact' onchange='load_message()'
-						class="form-control">
+					<select id='email-contact' onchange='load_message()' class="form-control">
                             	<?php
 				
-foreach ( $list_email as $email => $value ) {
+                                foreach ( $list_email as $email => $value ) {
 					if ($value == 1)
 						echo "<option value='" . $email . "' selected>" . $email . "</option>";
 					else
@@ -550,12 +704,9 @@ foreach ( $list_email as $email => $value ) {
 				}
 				?>
                             </select>
-                            <?php
-			
-} else {
+                            <?php } else {
 				echo "No Communication";
-			}
-			?>
+                                }?>
                         </div>
 				<!-- /.panel-heading -->
 				<div class="panel-body box">

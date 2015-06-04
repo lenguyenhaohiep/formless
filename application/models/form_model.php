@@ -8,6 +8,11 @@ class Form_model extends CI_Model {
         parent::__construct();
         $this->em = $this->doctrine->em;
     }
+    
+    function get_form($form_id){
+    	$form = $this->em->find('Entities\Form', $form_id);
+    	return $form; 
+    }
 
     /**
      * Create new form 
@@ -16,7 +21,7 @@ class Form_model extends CI_Model {
      * @param unknown $status
      * @param unknown $path_form
      */
-    function create_or_update_form($form_id = NULL, $title, $type_id, $status, $path_form) {
+    function create_or_update_form($form_id = NULL, $title, $type_id, $status, $data) {
         //get type of form
         $type = $this->em->find('Entities\Type', $type_id);
 
@@ -30,8 +35,8 @@ class Form_model extends CI_Model {
         if (isset($form)) {
             $form->setType($type);
             $form->setTitle($title);
-            if ($path_form != "-1")
-                $form->setPathForm($path_form);
+            if ($data != "-1")
+                $form->setData($data);
             $form->setStatus($status);
 
             if ($form->getUser() == NULL)
@@ -67,8 +72,8 @@ class Form_model extends CI_Model {
         }
     }
 
-    function send_form($form_id = NULL, $title, $type_id, $status, $path_form, $from_user_id, $to_user_id, $message) {
-        $form = $this->create_or_update_form($form_id, $title, $type_id, $status, $path_form);
+    function send_form($form_id = NULL, $title, $type_id, $status, $data, $from_user_id, $to_user_id, $message) {
+        $form = $this->create_or_update_form($form_id, $title, $type_id, $status, $data);
 
         //get from user
         $from_user = $this->em->find('Entities\User', $from_user_id);
@@ -89,9 +94,9 @@ class Form_model extends CI_Model {
         return $sending;
     }
 
-    function share_form($form_id = NULL, $title, $type_id, $status, $path_form, $to_user_id) {
+    function share_form($form_id = NULL, $title, $type_id, $status, $data, $to_user_id) {
         if ($to_user_id == null) {
-            $form = $this->create_or_update_form($form_id, $title, $type_id, $status, $path_form);
+            $form = $this->create_or_update_form($form_id, $title, $type_id, $status, $data);
 
             //delete old shared information
             $share = $this->em->getRepository('Entities\Share')->findBy(array('form' => $form));
@@ -108,7 +113,7 @@ class Form_model extends CI_Model {
         }
 
 
-        $form = $this->create_or_update_form($form_id, $title, $type_id, $status, $path_form);
+        $form = $this->create_or_update_form($form_id, $title, $type_id, $status, $data);
 
         //get to users
         $to_user = $this->em->find('Entities\User', $to_user_id);

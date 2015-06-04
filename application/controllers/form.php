@@ -23,7 +23,7 @@ class Form extends Base_controller {
             $this->load->model('type_model');
             $type = $this->type_model->get_type($type_id);
             if ($type != null) {
-                echo $this->formmaker->generate_from_json($type->getPathTemplate());
+                echo $this->formmaker->generate_from_json($type->getData());
             }
         }
     }
@@ -33,17 +33,17 @@ class Form extends Base_controller {
             $this->load->model('form_model');
             $form = $this->form_model->get_form_by_id($form_id);
             if ($form != null) {
-                echo $this->formmaker->generate_from_json($form->getPathForm());
+                echo $this->formmaker->generate_from_json($form->getData());
             }
         }
     }
 
-    function get_attr($type_id) {
-        if ($type_id != null) {
-            $this->load->model('type_model');
-            $type = $this->type_model->get_type($type_id);
-            if ($type != null) {
-                echo json_encode($this->formmaker->get_attribute_from_json($type->getPathTemplate()));
+    function get_attr($type_id, $form_id) {
+        if ($form_id != null) {
+            $this->load->model('form_model');
+            $form = $this->form_model->get_form($form_id);
+            if ($form != null) {
+                echo json_encode($this->formmaker->get_attribute_from_json($form->getData()));
             }
         }
     }
@@ -89,7 +89,7 @@ class Form extends Base_controller {
         $data['data'] = $this->input->post('data_form');
         // get template from type
         $data['type'] = $this->type_model->get_type($data['type_id']);
-        $data['template_json'] = $data['type']->getPathTemplate();
+        $data['template_json'] = $data['type']->getData();
         //no update for form
         if ($data['data'] == "" || $data['data'] == "-1") {
             if ($data['form_id'] != '')
@@ -245,4 +245,50 @@ class Form extends Base_controller {
         echo json_encode($result);
     }
 
+    function get_your_form(){
+        $forms = $this->form_model->get_all_forms($this->ion_auth->get_user_id());
+    	$shared = $this->form_model->get_shared_forms($this->ion_auth->get_user_id());
+        $result = array();    
+        foreach ($forms as $f){
+            $type_id = $f->getType()->getId();
+            $type_tile = $f->getType()->getTitle();
+            $form_id = $f->getId();
+            $form_title = $f->getTitle();
+            $result[$type_id][$type_tile][$form_id]=$form_title;
+        }
+        
+        foreach ($shared as $f){
+            $type_id = $f->getType()->getId();
+            $type_tile = $f->getType()->getTitle();
+            $form_id = $f->getId();
+            $form_title = $f->getTitle();
+            $result[$type_id][$type_tile][$form_id]=$form_title;
+        }
+        
+        echo json_encode($result);
+    }
+    
+    function fill($type_id, $type_id2, $form_id){
+    	$this->load->library ( 'formmaker' );
+    	$this->load->model ( 'type_model' );
+		if ($type_id != NULL && $type_id2 != NULL) {
+			//if two forms are different
+			if ($type_id != $type_id2) {
+				
+				$relation = $this->type_model->get_relation ( $type_id, $type_id2 );
+				if ($relation == NULL)
+					$relation = $this->type_model->get_relation ( $type_id2, $type_id );
+				if ($relation != NULL) {
+					$r = $this->formmaker->get_relation ( $relation );
+				}
+				echo json_encode ( $r [$type_id] [$type_id2] );
+			} else {
+				//if two forms are identical
+				$this->load->model('type_model');
+				$type = $this->type_model->get_type($type_id);
+				$r = $this->formmaker->get_relation_identical ($type_id, $type->getData() );
+				echo json_encode( $r [$type_id] [$type_id2] );
+			}
+		}
+    }
 }

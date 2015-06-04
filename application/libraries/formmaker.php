@@ -55,8 +55,34 @@ class Formmaker {
 		}						
 		return json_encode($_json);
 	}
+        
+        function get_relation($relation){
+            $result = array();
+            foreach ($relation as $r){
+                $id1= strval($r->getType1()->getId());
+                $id2= strval($r->getType2()->getId());
+                $attr1=$r->getAttr1();
+                $attr2=$r->getAttr2();
+                $result[$id1][$id2][$attr1]=$attr2;
+                $result[$id2][$id1][$attr2]=$attr1;
+            }
+            return $result;
+        }
+        
+        function get_relation_identical($type_id, $json){
+        	$result = array();
+        	 
+        	$template = json_decode ( $json, true )['fields'];
+        	if (count($template) > 0){
+        		foreach ($template as $component ) {
+        			$attr1 = $component['cid'];
+        			$result[$type_id][$type_id][$attr1]=$attr1;
+        		}
+        	}
+        	return $result;
+        }
 	
-	function get_attribute_from_json($json){
+	function get_attribute_from_json($json, $data = NULL){
 		$result = array();
 		$template = json_decode ( $json, true )['fields'];
 		$count=0;

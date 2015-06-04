@@ -173,6 +173,7 @@ body {
 
 .form-review .modal-body {
     max-height: 450px;
+    min-height: 450px;
     overflow-x: scroll;
 }
 .form-review {

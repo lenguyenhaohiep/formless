@@ -75,6 +75,18 @@ class Type extends \Entities\Type implements \Doctrine\ORM\Proxy\Proxy
         return parent::getPathTemplate();
     }
 
+    public function setData($data)
+    {
+        $this->__load();
+        return parent::setData($data);
+    }
+
+    public function getData()
+    {
+        $this->__load();
+        return parent::getData();
+    }
+
     public function setGroupType(\Entities\Group_type $groupType = NULL)
     {
         $this->__load();
@@ -90,7 +102,7 @@ class Type extends \Entities\Type implements \Doctrine\ORM\Proxy\Proxy
 
     public function __sleep()
     {
-        return array('__isInitialized__', 'id', 'title', 'path_template', 'group_type');
+        return array('__isInitialized__', 'id', 'title', 'path_template', 'data', 'group_type');
     }
 
     public function __clone()

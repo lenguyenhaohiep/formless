@@ -1,27 +1,28 @@
-Entities\Type:
+Entities\Form_relation:
   type: entity
-  table: type
+  table: form_relation
   fields:
     id:
       type: integer
       id: true
       generator:
         strategy: AUTO
-    title:
+    attr1:
       type: string
       length: 255
       nullable: false
-    path_template:
+    attr2:
       type: string
       length: 255
-      nullable: true
-    data:
-      type: string
-      length: 2147483647
-      nullable: true
+      nullable: false
   manyToOne:
-    group_type:
-      targetEntity: Group_type
+    type1:
+      targetEntity: Type
       joinColumns:
-        group_type_id:
+        type_id_1:
+          referencedColumnName: id
+    type2:
+      targetEntity: Type
+      joinColumns:
+        type_id_2:
           referencedColumnName: id

@@ -38,7 +38,7 @@ class Type_model extends CI_Model{
 		$type = $em->find('Entities\Type', $type_id);
 		
 		if ($type!=null){
-			$type->setPathTemplate($template);
+			$type->setData($template);
 			$em->persist($type);
 			$em->flush();
 		}
@@ -54,5 +54,39 @@ class Type_model extends CI_Model{
                 return FALSE;
             return TRUE;
         }
-	
+        
+        function create_or_update_relation($type_id1, $type_id2, $attr1, $attr2) {
+        $em = $this->doctrine->em;
+        $type1 = $em->find('Entities\Type', $type_id1);
+        $type2 = $em->find('Entities\Type', $type_id2);
+        $r = $em->getRepository('Entities\Form_relation')->findOneBy(array('attr1' => $attr1, 'type1' => $type1, 'type2' => $type2));
+        if ($r == NULL){
+            $r = $em->getRepository('Entities\Form_relation')->findOneBy(array('attr2' => $attr1, 'type2' => $type1, 'type1' => $type2));
+
+            if ($r == NULL){
+                $r = new Entities\Form_relation;
+                $r->setAttr1($attr1);
+                $r->setAttr2($attr2);
+                $r->setType1($type1);
+                $r->setType2($type2);
+            }else{
+                $r->setAttr1($attr2);
+            }
+        }
+        else{
+            $r->setAttr2($attr2);
+        }
+        $em->persist($r);
+        $em->flush();
+    }
+    
+    function get_relation($type_id1, $type_id2){
+        $em = $this->doctrine->em;
+        $type1 = $em->find('Entities\Type', $type_id1);
+        $type2 = $em->find('Entities\Type', $type_id2);
+        $r = $em->getRepository('Entities\Form_relation')->findBy(array('type1' => $type1, 'type2' => $type2));
+        return $r;
+        
+    }
+
 }

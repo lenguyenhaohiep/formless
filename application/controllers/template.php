@@ -14,23 +14,40 @@ class Template extends CI_Controller {
         if ($type_id != NULL) {
             $this->load->model('type_model');
             $type = $this->type_model->get_type($type_id);
-            if ($type->getPathTemplate() !== '') {
-                echo $type->getPathTemplate();
+            if ($type->getData() !== '' && $type->getData() !== NULL) {
+                echo $type->getData();
             } else
                 echo "{}";
         }else {
             echo "{}";
         }
     }
-    
-    function get_attr($type_id) {
+
+    function get_relation($type_id, $type_id2) {
+        if ($type_id != NULL && $type_id2 != NULL) {
+            $this->load->library('formmaker');
+            $this->load->model('type_model');
+
+            $relation = $this->type_model->get_relation($type_id, $type_id2);
+            if ($relation == NULL)
+                $relation = $this->type_model->get_relation($type_id2, $type_id);
+            if ($relation != NULL) {
+                $r = $this->formmaker->get_relation($relation);
+            }
+            echo json_encode($r[$type_id][$type_id2]);
+        }
+    }
+
+    function get_attr($type_id = NULL) {
         $this->load->library('formmaker');
         if ($type_id != null) {
             $this->load->model('type_model');
             $type = $this->type_model->get_type($type_id);
             if ($type != null) {
-                echo json_encode($this->formmaker->get_attribute_from_json($type->getPathTemplate()));
+                echo json_encode($this->formmaker->get_attribute_from_json($type->getData()));
             }
+        } else {
+            echo '{}';
         }
     }
 
@@ -60,6 +77,20 @@ class Template extends CI_Controller {
             }
         }
         echo json_encode($result);
+    }
+
+    function relation() {
+        $type_id1 = $this->input->post('type_id1');
+        $type_id2 = $this->input->post('type_id2');
+        $data = $this->input->post('data');
+
+        $this->load->model('type_model');
+        foreach ($data as $d) {
+            $attr1 = $d['name'];
+            $attr2 = $d['value'];
+            $this->type_model->create_or_update_relation($type_id1, $type_id2, $attr1, $attr2);
+        }
+        echo "defined successfully";
     }
 
 }
