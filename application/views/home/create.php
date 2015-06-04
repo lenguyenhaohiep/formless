@@ -10,7 +10,7 @@ var email_share_current = '';
 var email_send = '';
 var form_data_before;
 var create_new=false;
-
+var data_fillable_form;
 
 function initilize(){
     
@@ -25,7 +25,7 @@ function initilize(){
                     opt = $('<optgroup>',{label:k1});
                     $.each(v1,function(k2,v2){
                         //option with value type_id/form_id
-                        option = $('<option>',{value:k+'/'+ k2}).html(v2);
+                        option = $('<option>',{value:k2}).html(v2);
                         opt.append(option);
                     });
                     $('#template-relate').append(opt);
@@ -236,6 +236,7 @@ function send_form(){
 	  		  data: {form_id: $('#form-id').val(), type_id:$('#cmb-type-id').val(), title:$('#form-title').val(), to_user: email_send, message: $('#txt-message').val(),data_form: form_data},
 	  		  success:function(data) {
 	  			$('#form-id').val(data);
+	  			$('#new-message').modal('hide');
 				display_msg('info', 'Sent succesfully, Check inbox for more details');
 				clear_email();
 				clear_form();
@@ -251,6 +252,18 @@ function send_form(){
 
     }
 
+function display_field(select){
+	var select_id = select.id;
+	var select_val = $(select).val();
+	var div_id = 'd'+select_id.substring(1);
+	$(document.getElementById(div_id)).empty();
+	if (select_val !== ''){
+		var data = data_fillable_form[select_val];
+		$(document.getElementById(div_id)).html(data);
+	}
+	
+}
+    
 function share_form(){
 	var form_data = $('#data-form').serializeArray();	
 
@@ -279,6 +292,7 @@ function share_form(){
 	  		  dataType: "json",
 	  		  data: {form_id: $('#form-id').val(), type_id:$('#cmb-type-id').val(), title:$('#form-title').val(), to_user: email_share_current,data_form: form_data},
 	  		  success:function(data) {
+	  			$('#share-form').modal('hide');
 				display_msg('info', 'Shared succesfully');				
 	  		  }
 	  	});
@@ -352,6 +366,10 @@ function save_form(){
 }
 
     function define_relation(){
+
+        var action='<?php if ($this->session->userdata('select') == 'detail') echo "form"; else echo "template"; ?>';
+        var id=<?php if ($this->session->userdata('select') == 'detail') echo "$('#form-id').val();"; else echo "$('#cmb-type-id').val();"; ?>;
+                
         if ($('#cmb-type-id').val() == ''){
             display_msg('Warning', 'Please Select Template');
             return;
@@ -359,10 +377,11 @@ function save_form(){
         $('#template-relate').val('');
         $('#template-relate option').css('display','block');
         if ($('#form-id').val() !== '')
-            $('#template-relate option[value='+$('#form-id').val()+']').css('display','none');
+        $('#template-relate option[value="'+$('#form-id').val()+'"]').css('display','none');
+
         $.ajax({
             type: "GET",
-            url: '<?php echo base_url();?>index.php/template/get_attr/'+$('#cmb-type-id').val(),
+            url: '<?php echo base_url();?>index.php/'+action+'/get_attr/'+id,
             dataType: "json",
             success: function(data){
                 $('#body-template-attr').empty();
@@ -373,9 +392,16 @@ function save_form(){
                         tr.append($('<td>').html(value));
                         td2 = $('<td>');
                         txt = 'Please select form to fill';
-                        td2.append($('<select>',{id: key, name: key}).append($('<option>',{value:''}).html(txt)));
+                        prefix = 'f';
+                        td2.append($('<select>',{id: prefix+key, name: prefix+key, onchange: 'display_field(this)'}).append($('<option>',{value:''}).html(txt)));
+
+                        prefix = 'd';
+                        td3 = $('<td>').append($('<div>',{id: prefix+key}));
                         tr.append(td2);
+                        tr.append(td3);
                         $('#body-template-attr').append(tr);
+
+                        
 
                     });
 
@@ -397,6 +423,7 @@ function save_form(){
                 else
                     txt = 'Please select field';
                 var option='<option value="">'+txt+'</option>';
+                var prefix= 'f';
                 $.each(data, function (i, item){
                     $.each(item, function (key, value){
                         option += '<option value="'+key+'">'+value+'</option>';
@@ -404,26 +431,41 @@ function save_form(){
                 });
                 $.each(attrs_current, function (i, item){                   
                     $.each(item, function (key, value){
-                        var select =  $(document.getElementById(key));
+                        var select =  $(document.getElementById(prefix+key));
                         select.empty();
                         select.append(option);
                     });
 
                 });
-                
-                //load current relation
+
+
+                //load data of the fillable form
                 $.ajax({
                     type:"GET",
-                    url : "<?php echo base_url()?>index.php/form/fill/"+$('#cmb-type-id').val()+"/"+$('#template-relate').val(),
+                    url : "<?php echo base_url()?>index.php/form/get_data_array/"+$('#template-relate').val(),
                     dataType: 'json',
                     success: function(data){
-                        $.each(data, function(key,item){
-                            var select =  $(document.getElementById(key));
-                            if (select !== undefined)
-                                select.val(item);
+                    	data_fillable_form = data;
+                        //load current relation
+                        $.ajax({
+                            type:"GET",
+                            url : "<?php echo base_url()?>index.php/form/fill/"+$('#cmb-type-id').val()+"/"+$('#template-relate').val(),
+                            dataType: 'json',
+                            success: function(data){
+                                $.each(data, function(key,item){
+                                    prefix='f';
+                                    var select =  $(document.getElementById(prefix+key));
+                                    if (select !== undefined){
+                                        select.val(item);
+                                        select.change();
+                                    }
+                                });
+                            }
                         });
                     }
-                });
+                }); 
+                
+
             }
         });
     }
@@ -444,6 +486,10 @@ function new_message(id){
 
 function close_new_message(id){
 	$(id).css('display','none');
+}
+
+function fill_form(){
+	$('#fill-form').modal('hide');
 }
 
 
@@ -489,7 +535,7 @@ function process_upload(button, type) {
 </script>
 <div id="page-wrapper" style="min-height: 275px;">
 	<!-- Modal -->
-        <div class="modal fade" id="new-message" tabindex="-1" role="dialog"
+        <div class="modal" id="new-message" tabindex="-1" role="dialog"
              aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-dialog form-review">
                 <div class="modal-content">
@@ -520,7 +566,7 @@ function process_upload(button, type) {
             <!-- /.modal-dialog -->
         </div>
         
-                <div class="modal fade" id="share-form" tabindex="-1" role="dialog"
+                <div class="modal" id="share-form" tabindex="-1" role="dialog"
              aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-dialog form-review">
                 <div class="modal-content">
@@ -546,7 +592,7 @@ function process_upload(button, type) {
             <!-- /.modal-dialog -->
         </div>
 
-        <div class="modal fade" id="fill-form" tabindex="-1" role="dialog"
+        <div class="modal" id="fill-form" tabindex="-1" role="dialog"
              aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-dialog form-review">
                 <div class="modal-content">
@@ -562,7 +608,7 @@ function process_upload(button, type) {
                         <thead>
                         <tr>
                             <th style="width: auto;min-width:270px">Your Current Form's fields</th>
-                                    <th>Form related 's fields
+                                    <th colspan="2" >Form related 's fields
                     <select id='template-relate' required
                             onchange="load_template_attr()">
                         <option value=''>Please Select Previous Form to Auto-Fill</option>
@@ -611,7 +657,7 @@ function process_upload(button, type) {
 		<div class="col-lg-12">
 			<div class="page-header">
 				<button id='btn-new-message' class="btn btn-primary" type="button"
-					onclick="new_message('#new-message')">New Message</button>
+					onclick="new_message('#new-message')">Message</button>
 					<?php
 					
 if (isset ( $permission ))

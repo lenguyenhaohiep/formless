@@ -88,6 +88,7 @@ body {
 .btn{
 	text-transform: uppercase;
 	font-size: 12px;
+	width: 80px;
 }
 .component-form{
 	display: inline-block; 

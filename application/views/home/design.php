@@ -209,6 +209,7 @@
                 url : "<?php echo base_url() ?>index.php/template/relation",
                 data: {type_id1: $('#cmb-type-id').val(), type_id2: $('#template-relate').val(), data: $('#form-relation-data').serializeArray()},
                 success: function(data){
+                	jq('#form-relation').modal('hide');
                     display_msg('info', data);
                 }
             });
@@ -219,7 +220,7 @@
 </script>
 <div id="page-wrapper">
     
-        <div class="modal fade" id="form-relation" tabindex="-1" role="dialog"
+        <div class="modal" id="form-relation" tabindex="-1" role="dialog"
          aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog form-review">
             <div class="modal-content">
@@ -268,7 +269,7 @@
         <!-- /.modal-dialog -->
     </div>
     
-    <div class="modal fade" id="form-preview" tabindex="-1" role="dialog"
+    <div class="modal" id="form-preview" tabindex="-1" role="dialog"
          aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog form-review">
             <div class="modal-content">
@@ -314,7 +315,7 @@
     <div class='row'>
         <div class="page-header">
             <button id="btn-new-message" class="btn btn-primary" type="button"
-                    onclick="define_relation()">Define Relations</button>
+                    onclick="define_relation()">Relations</button>
 
             <button class="btn btn-success" type="button" onclick="save_form(0)">Save</button>
             <button class="btn btn-warning" type="button" onclick="discard_form()">Discard</button>

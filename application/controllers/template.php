@@ -23,7 +23,7 @@ class Template extends CI_Controller {
         }
     }
 
-    function get_relation($type_id, $type_id2) {
+    function get_relation($type_id = NULL, $type_id2 = NULL) {
         if ($type_id != NULL && $type_id2 != NULL) {
             $this->load->library('formmaker');
             $this->load->model('type_model');
@@ -33,8 +33,12 @@ class Template extends CI_Controller {
                 $relation = $this->type_model->get_relation($type_id2, $type_id);
             if ($relation != NULL) {
                 $r = $this->formmaker->get_relation($relation);
-            }
-            echo json_encode($r[$type_id][$type_id2]);
+            
+            if ($r != null)
+            	echo json_encode($r[$type_id][$type_id2]);
+            else 
+            	echo json_encode('{}');
+        }
         }
     }
 

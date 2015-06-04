@@ -27,7 +27,19 @@ class Form extends Base_controller {
             }
         }
     }
+    
+    //get only data with attributes
+    function get_data_array($form_id = NULL){
+    	if ($form_id != null) {
+    		$this->load->model('form_model');
+    		$form = $this->form_model->get_form_by_id($form_id);
+    		if ($form != null) {
+    			echo json_encode($this->formmaker->get_data_form_json($form->getData()));
+    		}
+    	}
+    }
 
+    //get full template with data
     function get_data($form_id = NULL) {
         if ($form_id != null) {
             $this->load->model('form_model');
@@ -38,13 +50,16 @@ class Form extends Base_controller {
         }
     }
 
-    function get_attr($type_id, $form_id) {
+    function get_attr($form_id = NULL) {
         if ($form_id != null) {
             $this->load->model('form_model');
             $form = $this->form_model->get_form($form_id);
             if ($form != null) {
                 echo json_encode($this->formmaker->get_attribute_from_json($form->getData()));
             }
+        }
+        else{
+        	echo '{}';
         }
     }
 
@@ -268,9 +283,10 @@ class Form extends Base_controller {
         echo json_encode($result);
     }
     
-    function fill($type_id, $type_id2, $form_id){
+    function fill($type_id, $type_id2){
     	$this->load->library ( 'formmaker' );
     	$this->load->model ( 'type_model' );
+    	$this->load->library('formmaker');
 		if ($type_id != NULL && $type_id2 != NULL) {
 			//if two forms are different
 			if ($type_id != $type_id2) {
@@ -280,15 +296,18 @@ class Form extends Base_controller {
 					$relation = $this->type_model->get_relation ( $type_id2, $type_id );
 				if ($relation != NULL) {
 					$r = $this->formmaker->get_relation ( $relation );
-				}
-				echo json_encode ( $r [$type_id] [$type_id2] );
+				}								
 			} else {
 				//if two forms are identical
 				$this->load->model('type_model');
 				$type = $this->type_model->get_type($type_id);
 				$r = $this->formmaker->get_relation_identical ($type_id, $type->getData() );
-				echo json_encode( $r [$type_id] [$type_id2] );
 			}
+			
+			if (isset($r)){			
+				echo json_encode( $r [$type_id] [$type_id2] );	
+			}
+			else json_encode('{}');
 		}
     }
 }
