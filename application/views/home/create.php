@@ -130,10 +130,20 @@ function view_image(img){
 
 	
 function display(email,date,message){
-	html = '<li class="left clearfix"><div class="chat-body clearfix"><div class="header">'
-			+' <strong class="primary-font">'+email+'</strong><br/> <small'
-			+' class="text-muted"> <i class="fa fa-clock-o fa-fw"></i>'+date+'</small></div><p>'+message+'</p></div></li>';			
-			$('#chat-msg').append(html);
+	html = '<li class="left clearfix">'+
+				'<div class="chat-body clearfix">'+
+					'<div class="header">'+
+						'<strong class="primary-font">'+email+'</strong>'+
+						'<br/>'+
+						'<small class="text-muted">'+
+						'<i class="fa fa-clock-o fa-fw"></i>'+date+
+						'</small>'+
+					'</div>'+
+					'<p>'+message+'</p>'+
+				'</div>'+
+			'</li>';			
+
+	$('#chat-msg').append(html);
 			
 }
 
@@ -504,16 +514,23 @@ function fill_form(){
 				} 
 
 				if (type === 'radio'){
-					$(this).find(value=div.text()).prop('checked',true);
+					$('input:radio[name="'+this.name+'"]').filter('[value="'+div.text()+'"]').attr('checked', true);
 				}
 
 				if (type === 'checkbox'){
-					div.find('span').each(function(e){
-						$(this).find(value=$(e).text()).prop('checked',true);
+					name = this.name;
+					div.find('span').each(function(){
+						$('input:checkbox[name="'+name+'"]').filter('[value="'+$(this).text()+'"]').attr('checked', true);
 					});
 				}
 
 				if (type === 'file'){
+					button=this;
+					div.find('img').each(function(){
+						name='';
+			        	create_line_image(button,this.src, name);
+						
+					});
 				}
 			}		
 		});
@@ -532,11 +549,11 @@ function create_line_image(button,source, name){
 	  div_data = $('#'+ $(button).attr('id')+'-data'); 
 	  id_img_data = $(button).attr('id')+"-"+i;
 	  
-	  $(div_data).append("<div class='img-data' id='"+id_img_data+"-div' ><img class='image-select' /></div>");		  
+	  $(div_data).append("<div class='img-data' id='"+id_img_data+"-div' ><img  onclick='view_image(this)' class='image-select' /></div>");		  
 	  img = '#'+id_img_data + '-div img';
 	  $(img).attr("src",source);
 	  $(img).after('<button class="btn btn-danger select-file" type="button" onclick="delete_img(\''+id_img_data+'-div\');">Delete</button>');
-	  $(img).after('<span>'+name+'</span><br/>');
+// 	  $(img).after('<span>'+name+'</span><br/>');
 	  $(button).after('<input type="checkbox" checked name="'+id_button+'" value="'+ source +'" style="display: none">');
 	  
 	  i++;

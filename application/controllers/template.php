@@ -31,6 +31,7 @@ class Template extends CI_Controller {
             $relation = $this->type_model->get_relation($type_id, $type_id2);
             if ($relation == NULL)
                 $relation = $this->type_model->get_relation($type_id2, $type_id);
+            
             if ($relation != NULL) {
                 $r = $this->formmaker->get_relation($relation);
             
@@ -95,6 +96,12 @@ class Template extends CI_Controller {
             $this->type_model->create_or_update_relation($type_id1, $type_id2, $attr1, $attr2);
         }
         echo "defined successfully";
+    }
+    
+    function get_simple_edge(){
+    	$sql = 'SELECT DISTINCT type_id_1, type_id_2 FROM `form_relation` ';
+    	$sent = $this->em->getConnection()->query($sql)->fetchAll();
+    	return $sent;
     }
 
 }

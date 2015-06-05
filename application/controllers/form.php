@@ -19,6 +19,8 @@ class Form extends Base_controller {
     }
 
     function get_template($type_id = NULL) {
+    	$this->load->library('formmaker');
+    	 
         if ($type_id != null) {
             $this->load->model('type_model');
             $type = $this->type_model->get_type($type_id);
@@ -103,8 +105,17 @@ class Form extends Base_controller {
 
         $data['data'] = $this->input->post('data_form');
         // get template from type
-        $data['type'] = $this->type_model->get_type($data['type_id']);
-        $data['template_json'] = $data['type']->getData();
+        if ($data['form_id']!= ""){
+        	//update from current form
+        	$form = $this->form_model->get_form($data['form_id']);
+        	$data['template_json'] = $form->getData();
+   
+        }
+        else{
+        	//create new form template
+        	$data['type'] = $this->type_model->get_type($data['type_id']);
+        	$data['template_json'] = $data['type']->getData();
+        }
         //no update for form
         if ($data['data'] == "" || $data['data'] == "-1") {
             if ($data['form_id'] != '')
@@ -138,7 +149,8 @@ class Form extends Base_controller {
 
         $list_emails = explode(",", $data['to_email']);
         foreach ($list_emails as $email) {
-
+        	$email = $this->process_email(trim($email));
+        	 
             $to_user_id = $this->user_model->get_id_from_email(trim($email));
 
             $send = $this->form_model->send_form($data['form_id'], $data['title'], $data['type_id'], $status = 1, $data['form_filled'], $data['from_user_id'], $to_user_id, $data['message']);
@@ -156,8 +168,8 @@ class Form extends Base_controller {
         } else {
             $list_emails = explode(",", $data['to_email']);
 
-            foreach ($list_emails as $email) {
-
+            foreach ($list_emails as $email) {            	 
+            	$email = $this->process_email(trim($email));
                 $to_user_id = $this->user_model->get_id_from_email(trim($email));
                 $share = $this->form_model->share_form($data['form_id'], $data['title'], $data['type_id'], $status = 1, $data['form_filled'], $to_user_id);
 
@@ -196,9 +208,17 @@ class Form extends Base_controller {
         }
     }
 
+    
+    function process_email($email=NULL){
+    	$terms = explode(" ",$email);
+    	$email = trim($terms[2]);
+    	$email = substr($email, 1, strlen($email) - 2);
+    	return $email ;
+    }
+    
     function get_message() {
         $form_id = $this->input->post('form_id');
-        $email_contact = $this->input->post('email_contact');
+        $email_contact = $this->process_email($this->input->post('email_contact'));
 
         $this->load->model('form_model');
         $histories = $this->form_model->get_message_by_email($form_id, $email_contact);
@@ -227,10 +247,14 @@ class Form extends Base_controller {
         foreach ($histories as $history) {
 
             if (strcmp($history->getFromUser()->getEmail(), $current_email) !== 0) {
-                $email = $history->getFromUser()->getEmail();
+            	$user = $history->getFromUser();
             } else {
-                $email = $history->getToUser()->getEmail();
+                $user = $history->getToUser();
             }
+			$firstname = $user->getFirstName ();
+				$lastname = $user->getLastName ();
+				$e = $user->getEmail ();
+				$email = "$firstname $lastname ($e)";
 
             $list_emails [$email] = 0;
             $i = $i + 1;
@@ -254,7 +278,12 @@ class Form extends Base_controller {
         if ($form_id != '') {
             $share = $this->form_model->get_share_by_form($form_id);
             foreach ($share as $s) {
-                $result [] = $s->getUser()->getEmail();
+            	$user = $s->getUser();
+            	$firstname = $user->getFirstName ();
+            	$lastname = $user->getLastName ();
+            	$e = $user->getEmail ();
+            	$email = "$firstname $lastname ($e)";
+                $result [] = $email;
             }
         }
         echo json_encode($result);

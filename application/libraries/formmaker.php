@@ -52,6 +52,7 @@ class Formmaker {
 				$_data [$d ['name']] = $d ["value"];
 			}
 		}
+				
 		$_json = json_decode ( $json, true );
 		$j = 0;
 		foreach ( $_json ['fields'] as $component ) {
@@ -67,6 +68,7 @@ class Formmaker {
 							$_json ['fields'] [$j] ['value'] = array (
 									$_data [$id] 
 							);
+							
 					} else {
 						$_json ['fields'] [$j] ['value'] = array ();
 					}
@@ -97,7 +99,8 @@ class Formmaker {
 	function get_relation_identical($type_id, $json) {
 		$result = array ();
 		
-		$template = json_decode ( $json, true )['fields'];
+		$_json = json_decode ( $json, true );
+		$template = $_json['fields'];
 		if (count ( $template ) > 0) {
 			foreach ( $template as $component ) {
 				$attr1 = $component ['cid'];
@@ -110,7 +113,8 @@ class Formmaker {
 	}
 	function get_attribute_from_json($json, $data = NULL) {
 		$result = array ();
-		$template = json_decode ( $json, true )['fields'];
+		$template = json_decode ( $json, true );
+		$template = $template['fields'];
 		$count = 0;
 		foreach ( $template as $component ) {
 			$type = $component ['field_type'];
@@ -122,7 +126,8 @@ class Formmaker {
 		return $result;
 	}
 	function generate_from_json($json) {
-		$template = json_decode ( $json, true )['fields'];
+		$template = json_decode ( $json, true );
+		$template = $template['fields'];
 		if (count ( $template ) > 0) {
 			foreach ( $template as $component ) {
 				$type = $component ['field_type'];
