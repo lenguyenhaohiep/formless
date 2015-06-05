@@ -283,10 +283,12 @@ class Form extends Base_controller {
         echo json_encode($result);
     }
     
-    function fill($type_id, $type_id2){
+    function fill($type_id, $form_id2){
     	$this->load->library ( 'formmaker' );
     	$this->load->model ( 'type_model' );
     	$this->load->library('formmaker');
+    	$this->load->model('form_model');
+    	$type_id2 = $this->form_model->get_form($form_id2)->getType()->getId();
 		if ($type_id != NULL && $type_id2 != NULL) {
 			//if two forms are different
 			if ($type_id != $type_id2) {

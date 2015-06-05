@@ -15,7 +15,23 @@ class Formmaker {
 		foreach ($data['fields'] as $item){
 			$id = $item['cid'];
 			$val = $item['value'];
-			$values[$id]=$val;
+			$type = $item['field_type'];
+			
+			if ($type == 'sign' || $type == 'file'){
+				$img='';
+				if (!is_array($val))
+					$val = array($val);
+				foreach ($val as $v)
+					$img .= "<img src=$v class='image-select'/>";
+				$values[$id] = $img;
+			}else 
+				if ($type == 'checkboxes'){
+				$p='';
+				foreach ($val as $v)
+					$p .= "<span>$v</span>, ";
+				$values[$id] = $p;
+			}else
+				$values[$id]=$val;
 		}
 
 		return $values;		

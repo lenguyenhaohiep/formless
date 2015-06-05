@@ -85,10 +85,11 @@ body {
 .fb-edit-field-wrapper .fb-field-label .field-type .fb-main{
     font-family: "San Francisco Text",sans-serif;
 }
-.btn{
-	text-transform: uppercase;
-	font-size: 12px;
-	width: 80px;
+.btn {
+    font-size: 12px;
+    min-width: 80px;
+    text-transform: uppercase;
+    width: auto;
 }
 .component-form{
 	display: inline-block; 

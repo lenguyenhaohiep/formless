@@ -434,6 +434,7 @@ function save_form(){
                         var select =  $(document.getElementById(prefix+key));
                         select.empty();
                         select.append(option);
+                        select.change();
                     });
 
                 });
@@ -456,8 +457,10 @@ function save_form(){
                                     prefix='f';
                                     var select =  $(document.getElementById(prefix+key));
                                     if (select !== undefined){
+                                        if (select.find('option[value='+item+']').val() != undefined){
                                         select.val(item);
                                         select.change();
+                                        }
                                     }
                                 });
                             }
@@ -489,6 +492,31 @@ function close_new_message(id){
 }
 
 function fill_form(){
+	$('#data-form').find('input, textarea, select').each(function(){
+		var id = this.id;
+		var tagName = this.tagName;
+	    var type = this.type;
+		
+		var div = $(document.getElementById('d'+id));
+		if (div != undefined){
+				if (type === 'text' || tagName ==='SELECT' || tagName === 'TEXTAREA'){
+					$(this).val(div.text());
+				} 
+
+				if (type === 'radio'){
+					$(this).find(value=div.text()).prop('checked',true);
+				}
+
+				if (type === 'checkbox'){
+					div.find('span').each(function(e){
+						$(this).find(value=$(e).text()).prop('checked',true);
+					});
+				}
+
+				if (type === 'file'){
+				}
+			}		
+		});
 	$('#fill-form').modal('hide');
 }
 
