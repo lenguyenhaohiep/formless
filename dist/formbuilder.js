@@ -788,7 +788,7 @@
 (function() {
   Formbuilder.registerField('sign', {
     order: 35,
-    view: "<input type='file' />",
+    view: "    First Name <input type='text'/>\nLast Name <input type='text'/>\n    <input type='file' />",
     edit: "",
     addButton: "<span class='symbol'><span class='fa fa-pencil'></span></span> Sign"
   });
