@@ -8,12 +8,12 @@ Entities\Certificate:
       generator:
         strategy: AUTO
     secret_key:
-      type: string
+      type: 2147483647
       length: 255
       nullable: false
     pubic_key:
       type: string
-      length: 255
+      length: 2147483647
       nullable: false
     valid_from:
       type: datetime
@@ -23,7 +23,7 @@ Entities\Certificate:
       nullable: false
     cert:
       type: string
-      length: 255
+      length: 2147483647
   oneToOne:
     user:
       targetEntity: User
