@@ -88,5 +88,11 @@ class Type_model extends CI_Model{
         return $r;
         
     }
+    
+    function get_all_relation (){
+    	$em = $this->doctrine->em;
+    	$relation = $em->getRepository('Entities\Form_relation')->findAll();
+    	return $relation;
+    }
 
 }

@@ -17,9 +17,9 @@ class Template extends CI_Controller {
             if ($type->getData() !== '' && $type->getData() !== NULL) {
                 echo $type->getData();
             } else
-                echo "{}";
+                echo json_encode(array());
         }else {
-            echo "{}";
+            echo json_encode(array());
         }
     }
 
@@ -35,11 +35,21 @@ class Template extends CI_Controller {
             if ($relation != NULL) {
                 $r = $this->formmaker->get_relation($relation);
             
-            if ($r != null)
             	echo json_encode($r[$type_id][$type_id2]);
-            else 
-            	echo json_encode('{}');
-        }
+            }
+            else{
+            	$this->load->model('type_model');
+            	$this->load->library('graphmaker');
+            	$relations = $this->type_model->get_all_relation();
+            	$graph = $this->graphmaker->build_graph_from_relation($relations);
+            	$lst_nodes_1 = $this->graphmaker->get_nodes($relations, $type_id);
+            	$lst_nodes_2 = $this->graphmaker->get_nodes($relations, $type_id2);
+            	
+            	if (count($lst_nodes_1) > 0 && count($lst_nodes_2) > 0)
+            		echo json_encode($this->graphmaker->find_relation($graph, $lst_nodes_1,$lst_nodes_2));
+            	else 
+            		echo json_encode(array());
+            }
         }
     }
 
@@ -52,7 +62,7 @@ class Template extends CI_Controller {
                 echo json_encode($this->formmaker->get_attribute_from_json($type->getData()));
             }
         } else {
-            echo '{}';
+            echo json_encode(array());
         }
     }
 
@@ -102,6 +112,14 @@ class Template extends CI_Controller {
     	$sql = 'SELECT DISTINCT type_id_1, type_id_2 FROM `form_relation` ';
     	$sent = $this->em->getConnection()->query($sql)->fetchAll();
     	return $sent;
+    }
+    
+    function graph(){
+    	$this->load->model('type_model');
+    	$this->load->library('graphmaker');
+    	$relations = $this->type_model->get_all_relation();
+    	$graph = $this->graphmaker->build_graph_from_relation($relations);
+    	print_r($graph);
     }
 
 }
