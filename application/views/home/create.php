@@ -497,6 +497,21 @@ function new_message(id){
             display_msg('Warning', msg);
 }
 
+function sign(id,id1,id2){
+
+    var msg = '';
+    if ($(document.getElementById(id1)).val()==='')
+        msg += 'Please Enter Your Signature\'s First Name </br>';
+    if ($(document.getElementById(id2)).val()==='')
+        msg += 'Please Enter Your Signature\'s Last Name';
+    if (msg === ''){   
+         //Sign Process
+    	}
+    else
+        display_msg('Warning', msg);
+}
+
+
 function close_new_message(id){
 	$(id).css('display','none');
 }

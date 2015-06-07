@@ -22,6 +22,7 @@ class Formmaker {
 				if (!is_array($val))
 					$val = array($val);
 				foreach ($val as $v)
+					if ($v != '')
 					$img .= "<img src=$v class='image-select'/>";
 				$values[$id] = $img;
 			}else 
@@ -234,13 +235,16 @@ class Formmaker {
 						<td>";
 			if ($type == 'sign')
 			$html .=		"FirstName <input type='text' id='$id-0' name='$id-0' placeholder='Enter FistName'/>
-							LastName <input type='text' id='$id-0' name='$id-0' placeholder='Enter LastName'/>";
-							
+							LastName <input type='text' id='$id-1' name='$id-1' placeholder='Enter LastName'/>";
+
+			if ($type == 'sign')
+				$type = 'file';
+			
 			$html .= 		"<label for='$id' class='btn btn-success'>Select image files</label>
 		
 							<input class='hidden' id='$id' $name type='$type' $require $option />
-							<button type='button'>Sign</button>
-							<button type='button'>Verify</button>
+							<button type='button' class='btn btn-primary' onclick = sign('$id','$id-0','$id-1')>Sign</button>
+							<button type='button' class='btn btn-warning' onclick = verify('$id','$id-0','$id-1')>Verify</button>
 							$data
 						</td>
 					</tr>";
