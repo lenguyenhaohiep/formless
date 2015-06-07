@@ -205,7 +205,7 @@ class Formmaker {
 			$value = '';
 			
 			// if input[type=file]
-		if ($type == 'file') {
+		if ($type == 'file' || $type == 'sign') {
 			if ($value == '')
 				$value = array ();
 			if (! is_array ( $value ))
@@ -216,16 +216,34 @@ class Formmaker {
 			$j = 0;
 			foreach ( $value as $img ) {
 				$id_img_data = "d" . $id . "-" . $j;
-				$data .= "<div class='img-data' id='" . $id_img_data . "-div' ><img onclick='view_image(this)' src='" . $img . "' class='image-select' />";
-				$data .= "<button class='btn btn-danger select-file' type='button' onclick='delete_img(\"$id_img_data-div\");'>Delete</button>";
-				$data .= "<input type='checkbox' checked name='$id' value='$img' style='display: none'></div>";
+				$data .= 	"<div class='img-data' id='" . $id_img_data . "-div' >
+								<img onclick='view_image(this)' src='" . $img . "' class='image-select' />";
+				$data .= 		"<button class='btn btn-danger select-file' type='button' onclick='delete_img(\"$id_img_data-div\");'>Delete</button>";
+				$data .= 		"<input type='checkbox' checked name='$id' value='$img' style='display: none'>
+							</div>";
 				
 				$j ++;
 			}
 			
 			$data .= "</div>";
 			$name = "";
-			$html = "<tr><td><label for='$id'>$label $require_text</label></td><td><label for='$id' class='btn btn-success'>Select image files</label><input class='hidden' id='$id' $name type='$type' $require $option />$data</td></tr>";
+			$html = "<tr>
+						<td>
+							<label for='$id'>$label $require_text</label>
+						</td>
+						<td>";
+			if ($type == 'sign')
+			$html .=		"FirstName <input type='text' id='$id-0' name='$id-0' placeholder='Enter FistName'/>
+							LastName <input type='text' id='$id-0' name='$id-0' placeholder='Enter LastName'/>";
+							
+			$html .= 		"<label for='$id' class='btn btn-success'>Select image files</label>
+		
+							<input class='hidden' id='$id' $name type='$type' $require $option />
+							<button type='button'>Sign</button>
+							<button type='button'>Verify</button>
+							$data
+						</td>
+					</tr>";
 		} else {
 			// input[type= text, date, number, email]
 			$data = '';
@@ -342,7 +360,7 @@ class Formmaker {
 		return $this->generate_html5_type ( $component, $type = 'file', $option = 'multiple class="file-upload" onchange="process_upload(this,2)"' );
 	}
 	function generate_sign($component) {
-		return $this->generate_html5_type ( $component, $type = 'file', $option = 'class="file-upload" onchange="process_upload(this,1)"' );
+		return $this->generate_html5_type ( $component, $type = 'sign', $option = 'class="file-upload" onchange="process_upload(this,1)"' );
 	}
 	function generate_section($component) {
 		$html = "<tr><td colspan='2'><h4 id='" . $component ['cid'] . "'>" . $component ['label'] . "</h4></td></tr>";
