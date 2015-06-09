@@ -240,8 +240,7 @@ class Formmaker {
 			if ($type == 'sign')
 				$type = 'file';
 			
-			$html .= 		"<label for='$id' class='btn btn-success'>Select image files</label>
-		
+			$html .= 		"<br/> <br/> <label for='$id' class='btn btn-success'>Select image files</label>
 							<input class='hidden' id='$id' $name type='$type' $require $option />
 							<button type='button' class='btn btn-primary' onclick = sign('$id','$id-0','$id-1')>Sign</button>
 							<button type='button' class='btn btn-warning' onclick = verify('$id','$id-0','$id-1')>Verify</button>
