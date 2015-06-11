@@ -11,6 +11,8 @@ var email_send = '';
 var form_data_before;
 var create_new=false;
 var data_fillable_form;
+var title_before;
+var title_current;
 
 function initilize(){
     
@@ -122,6 +124,7 @@ $( document ).ready(function() {
     ?>
     initilize();
     $("#email-contact").change();
+    title_before = $('#form-title').val();
 });
 
 function view_image(img){        
@@ -315,6 +318,10 @@ function share_form(){
 
     }
 
+function download_form(){
+	window.location.href= "<?php echo base_url()?>index.php/form/download/"+$('#form-id').val();
+}
+
 function clear_form(){
 	$('#form-id').val("");
 	$('#form-title').val("");
@@ -330,21 +337,28 @@ function clear_email(){
 }
 
 function check_form_edit(){
+	check = false;
     if (create_new){
         create_new=false;
-        console.log('create-new');
         return true;
     }
     //if not edit
     if ($('#data-form').serialize() === form_data_before){
-        console.log('content-no-changed');
-        return false;
+        check= false;
     } else{
         //if edit
-        console.log('content-changed');
-        return true;
+        check= true;
     }
+
+    //if not change title
+    if (title_before != $('#form-title').val())
+        check= true;
+    else
+    	check= false;
+
+	return check;
 }
+
 
 function save_form(){
 	var form_data = $('#data-form').serializeArray();	        
@@ -357,6 +371,8 @@ function save_form(){
                     return;
                 }
                 form_data_before = $('#data-form').serialize();
+                title_before = $('#form-title').val();
+                $('#btn-download').removeAttr('disabled');
 	    	$.ajax({
 	  		  type: "POST",
 	  		  url: "<?php echo base_url()?>index.php/form/save/",
@@ -366,6 +382,7 @@ function save_form(){
 		  		  		title:$('#form-title').val(),
 		  		  		data_form: form_data},
 	  		  success:function(data) {
+	  			$('#cmb-type-id').prop('disabled', true);
 		  		  if (data != ''){
 	  			  	$('#form-id').val(data);
 	  			  	display_msg('info', 'Saved succesfully');
@@ -514,6 +531,10 @@ function sign(id,id1,id2){
 
 function close_new_message(id){
 	$(id).css('display','none');
+}
+
+function validate_form(){
+	$('#validate').click();
 }
 
 function fill_form(){
@@ -723,6 +744,7 @@ function process_upload(button, type) {
 if (isset ( $permission ))
 						if ($permission == true) {
 							?>
+								<button class="btn btn-success" type="button" onclick="validate_form()">Validate</button>
 				<button class="btn btn-success" type="button" onclick="save_form()">Save</button>
 				<button class="btn btn-warning" type="button" onclick="clear_form()">Clear</button>
 				<button class="btn btn-danger" type="button"
@@ -738,7 +760,8 @@ if (isset ( $own ))
 				<button type="button" class="btn btn-primary"
 					onclick="new_message('#share-form')">Share</button>
 				<?php }?>
-                            				<button class="btn btn-success" type="button" onclick="download_form()">Download</button>
+                            				<button id='btn-download' class="btn btn-success" type="button" onclick="download_form()" 
+                            				>Download</button>
                                                         <button class="btn btn-warning" type="button" onclick="define_relation()">Auto-Fill</button>
 			</div>
 		</div>

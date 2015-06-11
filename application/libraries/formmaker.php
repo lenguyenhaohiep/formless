@@ -42,17 +42,19 @@ class Formmaker {
 	function fill_data($json, $data) {
 		$_data = array ();
 		foreach ( $data as $d ) {
-			if (isset ( $_data [$d ['name']] )) {
-				if (! is_array ( $_data [$d ['name']] )) {
-					$temp = $_data [$d ['name']];
-					$_data [$d ['name']] = array ();
-					$_data [$d ['name']] [] = $temp;
+			$name = $d ['name'];
+			if (isset ( $_data [$name] )) {
+				if (! is_array ( $_data [$name] )) {
+					$temp = $_data [$name];
+					$_data [$name] = array ();
+					$_data [$name] [] = $temp;
 				}
-				$_data [$d ['name']] [] = $d ['value'];
+				$_data [$name] [] = $d ['value'];
 			} else {
-				$_data [$d ['name']] = $d ["value"];
+				$_data [$name] = $d ["value"];
 			}
 		}
+		
 				
 		$_json = json_decode ( $json, true );
 		$j = 0;
@@ -72,6 +74,15 @@ class Formmaker {
 							
 					} else {
 						$_json ['fields'] [$j] ['value'] = array ();
+					}
+					break;
+				case 'sign':
+					$_json ['fields'] [$j] ['value'][0] = $_data [$id.'-0'];
+					$_json ['fields'] [$j] ['value'][1] = $_data [$id.'-1'];
+					if (isset ( $_data [$id] )) {												
+						$_json ['fields'] [$j] ['value'][2] = $_data [$id];		
+					} else {						
+						$_json ['fields'] [$j] ['value'][2] = null;
 					}
 					break;
 				default :
@@ -177,7 +188,7 @@ class Formmaker {
 			$this->html_template = 'No template available';
 		}
 		
-		return $this->html_template . "</table></form>";
+		return $this->html_template . "</table><input type='submit' id='validate' style='display:none'/></form>";
 	}
 	function check_require($true) {
 		if ($true == true)
@@ -215,6 +226,13 @@ class Formmaker {
 				);
 			$data = "<div id='$id-data'>";
 			$j = 0;
+			if ($type == 'sign'){
+				//only the third value is the image
+				$f_name = isset($value[0])?$value[0]:'';
+				$l_name = isset($value[1])?$value[1]:'';
+				$value = isset($value[2])?array($value[2]):array();	
+			}
+			
 			foreach ( $value as $img ) {
 				$id_img_data = "d" . $id . "-" . $j;
 				$data .= 	"<div class='img-data' id='" . $id_img_data . "-div' >
@@ -234,17 +252,19 @@ class Formmaker {
 						</td>
 						<td>";
 			if ($type == 'sign')
-			$html .=		"FirstName <input type='text' id='$id-0' name='$id-0' placeholder='Enter FistName'/>
-							LastName <input type='text' id='$id-1' name='$id-1' placeholder='Enter LastName'/>";
+			$html .=		"FirstName <input type='text' id='$id-0' name='$id-0' placeholder='Enter FistName' value='$f_name' $require/>
+							LastName <input type='text' id='$id-1' name='$id-1' placeholder='Enter LastName' value='$l_name' $require/>";
 
-			if ($type == 'sign')
-				$type = 'file';
+			
+			
+			//Add buttons Sign, Verify
 			
 			$html .= 		"<br/> <br/> <label for='$id' class='btn btn-success'>Select image files</label>
-							<input class='hidden' id='$id' $name type='$type' $require $option />
-							<button type='button' class='btn btn-primary' onclick = sign('$id','$id-0','$id-1')>Sign</button>
-							<button type='button' class='btn btn-warning' onclick = verify('$id','$id-0','$id-1')>Verify</button>
-							$data
+							<input class='hidden' id='$id' $name type='file' $require $option />";
+			if ($type=='sign')
+			$html .=		"<button type='button' class='btn btn-primary' onclick = sign('$id','$id-0','$id-1')>Sign</button>
+							<button type='button' class='btn btn-warning' onclick = verify('$id','$id-0','$id-1')>Verify</button>";
+			$html .=		"$data
 						</td>
 					</tr>";
 		} else {
@@ -324,7 +344,7 @@ class Formmaker {
 			else
 				$check = '';
 			
-			$html .= "<input id='$id' type='radio' name='$id' value='$val' $check>$val<br/>";
+			$html .= "<input id='$id' type='radio' name='$id' value='$val' $check $require>$val<br/>";
 		}
 		
 		$html .= "</td></tr>";

@@ -53,7 +53,7 @@ class Home extends Base_controller {
     function design(){
     	$this->load->model('type_model');
     	$this->data['group_types'] = $this->type_model->getAllTypes();
-        $this->render_page(lang('document_page_title'), "design", 'home/design', $this->data);
+        $this->render_page(lang('design_page_title'), "design", 'home/design', $this->data);
     	
     }
 

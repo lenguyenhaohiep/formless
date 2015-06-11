@@ -115,6 +115,9 @@ class Form extends Base_controller {
         	//create new form template
         	$data['type'] = $this->type_model->get_type($data['type_id']);
         	$data['template_json'] = $data['type']->getData();
+        	$template = json_decode($data['template_json'],true);
+        	$template['info'] = array('type'=>$data['type']->getTitle(),'title'=>$data['title']);
+        	$data['template_json'] = json_encode($template);
         }
         //no update for form
         if ($data['data'] == "" || $data['data'] == "-1") {
@@ -204,7 +207,7 @@ class Form extends Base_controller {
                 $this->data ['permission'] = true;
             else
                 $this->data ['permission'] = $this->form_model->check_modify($form_id);
-            $this->render_page(lang('create_page_title'), "detail", 'home/create', $this->data);
+            $this->render_page(lang('detail_page_title'), "detail", 'home/create', $this->data);
         }
     }
 
@@ -341,4 +344,23 @@ class Form extends Base_controller {
 			else json_encode('{}');
 		}
     }
+    
+    function download($form_id = NULL){
+    	if ($form_id != NULL) {
+    		$this->load->model('form_model');
+    		$form = $this->form_model->get_form($form_id);
+    		$this->load->helper('download');
+    		$name = $this->sanitize_file_name($form->getTitle()).".txt";
+    		$data = json_encode(json_decode($form->getData(),true), JSON_PRETTY_PRINT);
+    		force_download($name, $data);
+    	}
+    	else{
+    		echo "no form to download";
+    	}
+    }
+    
+function sanitize_file_name( $str='' ) {
+   $sanitized = preg_replace('/[^a-zA-Z0-9-_\.]/','', $str);
+	return $sanitized;
+}
 }

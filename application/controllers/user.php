@@ -62,16 +62,13 @@ class User extends Base_controller{
 		echo '<br/>';
 		echo $csrStr;     // Will hold the exported Certificate
 	}
-	
-	function sign(){
-		// init gnupg
-		$res = gnupg_init();
-		// not really needed. Clearsign is default
-		gnupg_setsignmode($res,GNUPG_SIG_MODE_CLEAR);
-		// add key with passphrase 'test' for signing
-		gnupg_addsignkey($res,"8660281B6051D071D94B5B230549F9DC851566DC","test");
-		// sign
-		$signed = gnupg_sign($res,"just a test");
-		echo $signed;
+	function sign() {
+		$gnu = gnupg_init();
+		$key = 'password to (en/de)crypt';
+		$string = 'string to be encrypted';
+		
+		$test = mcrypt_encrypt ( MCRYPT_RIJNDAEL_256, md5 ( $key ), $string, MCRYPT_MODE_CBC, md5 ( md5 ( $key ) ) );
+		$r = mcrypt_decrypt ( MCRYPT_RIJNDAEL_256, md5 ( $key ), $test, MCRYPT_MODE_CBC, md5 ( md5 ( $key ) ) );
+		echo $r;
 	}
 }

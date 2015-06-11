@@ -257,8 +257,12 @@ class Form_model extends CI_Model {
         $user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
         $form = $em->getRepository('Entities\Form')->findOneBy(array('id' => $form_id));
         $send = $em->getRepository('Entities\Send_history')->findBy(array('form'=>$form, 'to_user'=>$user));
-        if ($send == NULL)
+        if ($send == NULL){
+        	$share = $em->getRepository('Entities\Share')->findBy(array('user'=>$user, 'form' => $form));
+        	if ($share != NULL)
+        		return TRUE;
             return FALSE;
+        }
         if (count($send) > 0)
             return TRUE;
         return FALSE;

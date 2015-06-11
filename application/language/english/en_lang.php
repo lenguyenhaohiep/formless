@@ -22,6 +22,9 @@ $lang['logout']='Logout';
 $lang['signature_page_title']='Signature Settings';
 $lang['form_mydocument']='My Forms';
 $lang['document_page_title']='My Forms';
+$lang['design_page_title']='Design';
+$lang['detail_page_title']='Detail';
+
 $lang['']='';
 $lang['']='';
 $lang['']='';
