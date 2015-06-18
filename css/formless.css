@@ -182,3 +182,16 @@ body {
     max-width: 800px;
     width: 80%;
 }
+
+.share-info {
+    max-height: 100px;
+    min-height: 100px;
+    overflow-x: scroll;
+}
+.share-attr-info {
+    max-height: 160px;
+    min-height: 160px;
+    overflow-x: scroll;
+    padding-bottom: 10px;
+    padding-top: 10px;
+}

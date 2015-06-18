@@ -1,7 +1,9 @@
 
 <!-- jQuery-Tagging-Tokenizer-Input-with-Autocomplete -->
 <script src="<?php echo base_url(); ?>js/tokens.js"></script>
-
+<script src="<?php echo base_url(); ?>dist/jquery.bonsai.js"></script>
+<script src="<?php echo base_url(); ?>dist/jquery.qubit.js"></script>
+<link href="<?php echo base_url(); ?>dist/jquery.bonsai.css"rel="stylesheet">
 
 <script type="text/javascript">
 var current_email = '<?php echo $this->session->userdata('identity');?>';
@@ -73,11 +75,21 @@ function initilize(){
             data: {form_id: $('#form-id').val()},
             success: function (data) {
                 var json = data;
+                $.each(data, function(){ 
+                    $('#share-info').append($('<p>').html(this));
+                });
                 $.ajax({
                     url: "<?php echo base_url() ?>index.php/user/get_all_emails",
                     type: "post",
                     dataType: 'json',
                     success: function (data) {
+                        $('#email-contact-share').append($('<option>',{value:''}).html('Please select user to share'));
+                    
+                        $.each(data, function(){
+                            
+                            $('#email-contact-share').append($('<option>',{value:this}).html(this));
+                        });
+                        /*
                         $('#txt-email-share').tokens({
                             source: data,
                             allowAddingNoSuggestion: false,
@@ -102,7 +114,7 @@ function initilize(){
                                 email1 = values;
                                 return true;
                             }
-                        });
+                        });*/
 
                         $("input.tokens-input-text").attr('placeholder', 'Enter emails...');
                         email_share_before = $('#txt-email-share').val();
@@ -172,6 +184,40 @@ function load_message(){
         });
     }
 
+
+function load_share(){
+	var action='<?php if ($this->session->userdata('select') == 'detail') echo "form"; else echo "template"; ?>';
+    var id=<?php if ($this->session->userdata('select') == 'detail') echo "$('#form-id').val();"; else echo "$('#cmb-type-id').val();"; ?>;
+    $('#share-attrs').empty();
+
+	if ($('#email-contact-share').val() !== '')
+    
+    $.ajax({
+        type: "GET",
+        url: '<?php echo base_url();?>index.php/'+action+'/get_attr/'+id,
+        dataType: "json",
+        success: function(data){
+            attrs_current = data;
+            ol = $('<ol>',{'id':'lstAttr'});
+            $.each(data, function (i, item){
+                $.each(item, function (key, value){
+                     li = $('<li>',{'data-value':value}).html(value);  
+                     ol.append(li);              
+                });
+
+            });
+            $('#share-attrs').append(ol);
+
+
+            $('#lstAttr').bonsai({
+            	  expandAll: true,
+            	  checkboxes: true, // depends on jquery.qubit plugin
+            	  createInputs: 'checkbox' // takes values from data-name and data-value, and data-name is inherited
+            });
+        }
+    });
+
+}
 
 function load_form(){
     var action='<?php if ($this->session->userdata('select') == 'detail') echo "get_data"; else echo "get_template"; ?>';
@@ -427,9 +473,6 @@ function save_form(){
                         tr.append(td2);
                         tr.append(td3);
                         $('#body-template-attr').append(tr);
-
-                        
-
                     });
 
                 });
@@ -658,13 +701,25 @@ function process_upload(button, type) {
                     </div>
                     <div class="modal-body" id='form-message-content'>
 				<div class="panel-heading">
-					<input type="email" id="txt-email-share"
-						class="form-control input-sm" placeholder="Type emails here..." value="">
+				
+					<h4>Form already shared with</h4>
+					<div id='share-info' class='share-info'></div>	
+					
+					<h4>Sharing modification</h4>			
 
+					<select id='email-contact-share' onchange='load_share()' class="form-control">
+ 
+                    </select>
+       
+       				<div id = 'share-attrs' class='share-attr-info'></div>
+				
+				
+					<!-- <input style="display: none;" type="email" id="txt-email-share" class="form-control input-sm" placeholder="Type emails here..." value=""> -->
+					<button class="btn btn-info" id='btn-send' onclick="share_form()">Share</button>
+       				
 				</div>
                     </div>
                     <div class="modal-footer">
-					<button class="btn btn-info" id='btn-send' onclick="share_form()">Share</button>
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     </div>
                 </div>

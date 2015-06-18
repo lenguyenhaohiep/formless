@@ -46,6 +46,7 @@ class User extends Base_controller{
 	
 	function key(){
 		$dn = array("countryName" => 'XX', "stateOrProvinceName" => 'State', "localityName" => 'SomewhereCity', "organizationName" => 'MySelf', "organizationalUnitName" => 'Whatever', "commonName" => 'mySelf', "emailAddress" => 'user@domain.com');
+		echo $test;
 		$privkeypass = '1234';
 		$numberofdays = 365;
 		
