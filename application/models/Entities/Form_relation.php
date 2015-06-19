@@ -25,14 +25,14 @@ class Form_relation
     private $attr2;
 
     /**
-     * @var Entities\Form
+     * @var Entities\Type
      */
-    private $form1;
+    private $type1;
 
     /**
-     * @var Entities\Form
+     * @var Entities\Type
      */
-    private $form2;
+    private $type2;
 
 
     /**
@@ -88,60 +88,6 @@ class Form_relation
     {
         return $this->attr2;
     }
-
-    /**
-     * Set form1
-     *
-     * @param Entities\Form $form1
-     * @return Form_relation
-     */
-    public function setForm1(\Entities\Form $form1 = null)
-    {
-        $this->form1 = $form1;
-        return $this;
-    }
-
-    /**
-     * Get form1
-     *
-     * @return Entities\Form 
-     */
-    public function getForm1()
-    {
-        return $this->form1;
-    }
-
-    /**
-     * Set form2
-     *
-     * @param Entities\Form $form2
-     * @return Form_relation
-     */
-    public function setForm2(\Entities\Form $form2 = null)
-    {
-        $this->form2 = $form2;
-        return $this;
-    }
-
-    /**
-     * Get form2
-     *
-     * @return Entities\Form 
-     */
-    public function getForm2()
-    {
-        return $this->form2;
-    }
-    /**
-     * @var Entities\Type
-     */
-    private $type1;
-
-    /**
-     * @var Entities\Type
-     */
-    private $type2;
-
 
     /**
      * Set type1

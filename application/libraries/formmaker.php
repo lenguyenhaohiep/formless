@@ -9,6 +9,14 @@ class Formmaker {
 	function get_value_from_xml($xml) {
 	}
 	
+	function get_attributes_from_requested_json($json){
+		$attrs = array();
+		foreach ($json as $key) {
+			$attrs[] = $key['name'];
+		}
+		return json_encode($attrs);
+	}
+
 	function get_data_form_json($data_json){
 		$data= json_decode($data_json, true);
 		$values = array();
@@ -130,9 +138,9 @@ class Formmaker {
 		$count = 0;
 		foreach ( $template as $component ) {
 			$type = $component ['field_type'];
-			if ($type != 'header' && $type != 'section')
+			#if ($type != 'header' && $type != 'section')
 				$result [] = array (
-						$component ['cid'] => $component ['label'] 
+						$component ['cid'] => array('type'=> $type, 'label'=>$component ['label']) 
 				);
 		}
 		return $result;

@@ -94,7 +94,7 @@ class Form_model extends CI_Model {
         return $sending;
     }
 
-    function share_form($form_id = NULL, $title, $type_id, $status, $data, $to_user_id) {
+    function share_form($form_id = NULL, $title, $type_id, $status, $data, $to_user_id, $attr) {
         if ($to_user_id == null) {
             $form = $this->create_or_update_form($form_id, $title, $type_id, $status, $data);
 
@@ -134,6 +134,7 @@ class Form_model extends CI_Model {
         $share->setForm($form);
         $share->setUser($to_user);
         $share->setForm($form);
+        $share->setAttrs($attr);
 
         $this->em->persist($share);
         $result = $this->em->flush();

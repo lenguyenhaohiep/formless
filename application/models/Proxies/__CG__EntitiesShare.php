@@ -51,6 +51,18 @@ class Share extends \Entities\Share implements \Doctrine\ORM\Proxy\Proxy
         return parent::getId();
     }
 
+    public function setAttrs($attrs)
+    {
+        $this->__load();
+        return parent::setAttrs($attrs);
+    }
+
+    public function getAttrs()
+    {
+        $this->__load();
+        return parent::getAttrs();
+    }
+
     public function setForm(\Entities\Form $form = NULL)
     {
         $this->__load();
@@ -78,7 +90,7 @@ class Share extends \Entities\Share implements \Doctrine\ORM\Proxy\Proxy
 
     public function __sleep()
     {
-        return array('__isInitialized__', 'id', 'form', 'user');
+        return array('__isInitialized__', 'id', 'attrs', 'form', 'user');
     }
 
     public function __clone()

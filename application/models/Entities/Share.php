@@ -15,6 +15,11 @@ class Share
     private $id;
 
     /**
+     * @var string $attrs
+     */
+    private $attrs;
+
+    /**
      * @var Entities\Form
      */
     private $form;
@@ -33,6 +38,28 @@ class Share
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * Set attrs
+     *
+     * @param string $attrs
+     * @return Share
+     */
+    public function setAttrs($attrs)
+    {
+        $this->attrs = $attrs;
+        return $this;
+    }
+
+    /**
+     * Get attrs
+     *
+     * @return string 
+     */
+    public function getAttrs()
+    {
+        return $this->attrs;
     }
 
     /**

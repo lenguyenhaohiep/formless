@@ -8,8 +8,8 @@ Entities\Certificate:
       generator:
         strategy: AUTO
     secret_key:
-      type: 2147483647
-      length: 255
+      type: string
+      length: 2147483647
       nullable: false
     pubic_key:
       type: string

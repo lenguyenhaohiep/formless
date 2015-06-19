@@ -48,16 +48,16 @@
 $active_group = 'default';
 $active_record = TRUE;
 // Telecom Paristech
-$db['default']['hostname'] = 'tiresias.enst.fr';
-$db['default']['username'] = 'tp122';
-$db['default']['password'] = 'tp122';
-$db['default']['database'] = 'tp122';
+//$db['default']['hostname'] = 'tiresias.enst.fr';
+//$db['default']['username'] = 'tp122';
+//$db['default']['password'] = 'tp122';
+//$db['default']['database'] = 'tp122';
 
 // Chez moi
-// $db['default']['hostname'] = 'localhost';
-// $db['default']['username'] = 'root';
-// $db['default']['password'] = '';
-// $db['default']['database'] = 'authentication';
+$db['default']['hostname'] = '127.0.0.1';
+$db['default']['username'] = 'root';
+$db['default']['password'] = '';
+$db['default']['database'] = 'authentication';
 
 $db['default']['dbdriver'] = 'mysql';
 $db['default']['dbprefix'] = '';

@@ -75,30 +75,6 @@ class Form_relation extends \Entities\Form_relation implements \Doctrine\ORM\Pro
         return parent::getAttr2();
     }
 
-    public function setForm1(\Entities\Form $form1 = NULL)
-    {
-        $this->__load();
-        return parent::setForm1($form1);
-    }
-
-    public function getForm1()
-    {
-        $this->__load();
-        return parent::getForm1();
-    }
-
-    public function setForm2(\Entities\Form $form2 = NULL)
-    {
-        $this->__load();
-        return parent::setForm2($form2);
-    }
-
-    public function getForm2()
-    {
-        $this->__load();
-        return parent::getForm2();
-    }
-
     public function setType1(\Entities\Type $type1 = NULL)
     {
         $this->__load();

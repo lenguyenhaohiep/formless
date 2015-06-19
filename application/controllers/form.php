@@ -96,6 +96,7 @@ class Form extends Base_controller {
 		$data ['from_user_id'] = $this->user_model->get_id_from_email ( $this->session->userdata ( 'identity' ) );
 		
 		$data ['data'] = $this->input->post ( 'data_form' );
+		$data ['attrs'] = $this->input->post ( 'list_attrs');
 		// get template from type
 		if ($data ['form_id'] != "") {
 			// update from current form
@@ -112,6 +113,12 @@ class Form extends Base_controller {
 			);
 			$data ['template_json'] = json_encode ( $template );
 		}
+
+		// process requested shared information
+
+		if ($data ['attrs'] != "")
+			$data ['attrs'] = $this->formmaker->get_attributes_from_requested_json($data['attrs']);
+
 		// no update for form
 		if ($data ['data'] == "" || $data ['data'] == "-1") {
 			if ($data ['form_id'] != '')
@@ -156,7 +163,7 @@ class Form extends Base_controller {
 		$data = $this->get_request_data ();
 		
 		if ($data ['to_email'] == '') {
-			$share = $this->form_model->share_form ( $data ['form_id'], $data ['title'], $data ['type_id'], $status = 1, $data ['form_filled'], null );
+			$share = $this->form_model->share_form ( $data ['form_id'], $data ['title'], $data ['type_id'], $status = 1, $data ['form_filled'], null, $data['attrs']);
 			echo $share->getId ();
 		} else {
 			$list_emails = explode ( ",", $data ['to_email'] );
@@ -164,7 +171,7 @@ class Form extends Base_controller {
 			foreach ( $list_emails as $email ) {
 				$email = $this->process_email ( trim ( $email ) );
 				$to_user_id = $this->user_model->get_id_from_email ( trim ( $email ) );
-				$share = $this->form_model->share_form ( $data ['form_id'], $data ['title'], $data ['type_id'], $status = 1, $data ['form_filled'], $to_user_id );
+				$share = $this->form_model->share_form ( $data ['form_id'], $data ['title'], $data ['type_id'], $status = 1, $data ['form_filled'], $to_user_id, $data['attrs']);
 				
 				echo $share->getId ();
 			}
@@ -269,7 +276,7 @@ class Form extends Base_controller {
 				$lastname = $user->getLastName ();
 				$e = $user->getEmail ();
 				$email = "$firstname $lastname ($e)";
-				$result [] = $email;
+				$result [] = array('email'=>$email,'attrs'=>json_encode($s->getAttrs()));
 			}
 		}
 		echo json_encode ( $result );

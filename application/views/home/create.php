@@ -16,7 +16,7 @@ var data_fillable_form;
 var title_before;
 var title_current;
 
-function initilize(){
+function initialize(){
     
     //Load your form
     $.ajax({
@@ -39,8 +39,8 @@ function initilize(){
     });
     
 	$.ajax({
-	     url:"<?php echo base_url() ?>index.php/user/get_all_emails",
-	     type:"post",
+        url:"<?php echo base_url() ?>index.php/user/get_all_emails",
+        type:"post",
 	     dataType: 'json',
 	     success:function(data) {
                 $('#txt-email').tokens({
@@ -68,15 +68,36 @@ function initilize(){
                 $("input.tokens-input-text").attr('placeholder', 'Enter emails...');
             }
         });
-        $.ajax({
+    }
+$( document ).ready(function() {
+    <?php
+    if (isset ( $form_instance )) {
+            echo "$('#cmb-type-id').val('" . $form_instance->getType ()->getId () . "');";
+            echo "$('#cmb-type-id').change();";
+            echo "$('#cmb-type-id').prop('disabled',true);";
+            echo "$('#form-title').val('" . $form_instance->getTitle () . "');";
+            echo "$('#form-id').val('" . $form_instance->getId () . "');";
+    }
+    ?>
+    initialize();
+    $("#email-contact").change();
+    title_before = $('#form-title').val();
+});
+
+
+function load_shared_info(){
+            $.ajax({
             url: "<?php echo base_url() ?>index.php/form/get_shared_info/",
             type: "post",
             dataType: 'json',
             data: {form_id: $('#form-id').val()},
             success: function (data) {
                 var json = data;
+                $('#share-info').empty();
+                $('#email-contact-share').empty();
+
                 $.each(data, function(){ 
-                    $('#share-info').append($('<p>').html(this));
+                    $('#share-info').append($('<p>').html(this.email));
                 });
                 $.ajax({
                     url: "<?php echo base_url() ?>index.php/user/get_all_emails",
@@ -89,32 +110,8 @@ function initilize(){
                             
                             $('#email-contact-share').append($('<option>',{value:this}).html(this));
                         });
-                        /*
-                        $('#txt-email-share').tokens({
-                            source: data,
-                            allowAddingNoSuggestion: false,
-                            allowMultiplePaste: true,
-                            suggestionsZindex: 19999,
-                            initValue: json,
-                            updateValue: function(val){
-                                email_share_current = val;
-                            },
-                            validate: function (val) {
-                                var values = val.split(',');
 
-                                for (var value in values) {
-                                    value = values[value];
-
-                                    if (value.indexOf('@') !== -1) {
-                                        continue;
-                                    } else {
-                                        return false;
-                                    }
-                                }
-                                email1 = values;
-                                return true;
-                            }
-                        });*/
+                        $('#email-contact-share').change();
 
                         $("input.tokens-input-text").attr('placeholder', 'Enter emails...');
                         email_share_before = $('#txt-email-share').val();
@@ -123,28 +120,16 @@ function initilize(){
 
             }
         });
-    }
-$( document ).ready(function() {
-    <?php
-    if (isset ( $form_instance )) {
-            echo "$('#cmb-type-id').val('" . $form_instance->getType ()->getId () . "');";
-            echo "$('#cmb-type-id').change();";
-            echo "$('#cmb-type-id').prop('disabled',true);";
-            echo "$('#form-title').val('" . $form_instance->getTitle () . "');";
-            echo "$('#form-id').val('" . $form_instance->getId () . "');";
-    }
-    ?>
-    initilize();
-    $("#email-contact").change();
-    title_before = $('#form-title').val();
-});
+}
+
+
 
 function view_image(img){        
     window.open(img.src,'_blank');
 }
 
 	
-function display(email,date,message){
+function display_email(email,date,message){
 	html = '<li class="left clearfix">'+
 				'<div class="chat-body clearfix">'+
 					'<div class="header">'+
@@ -173,10 +158,10 @@ function load_message(){
                 $.each(data, function(i, item){
                 if (item.from == current_email){
                     item.from='you';
-                    display(item.from,item.date,item.message);
+                    display_email(item.from,item.date,item.message);
                 }
                 else {
-                    display(item.from, item.date, item.message);
+                    display_email(item.from, item.date, item.message);
                 }
               });
           }
@@ -198,15 +183,34 @@ function load_share(){
         dataType: "json",
         success: function(data){
             attrs_current = data;
-            ol = $('<ol>',{'id':'lstAttr'});
+            root = $('<ol>',{'id':'lstAttr','data-name':'root'});
+            header = root;
+            current = root;
             $.each(data, function (i, item){
                 $.each(item, function (key, value){
-                     li = $('<li>',{'data-value':value}).html(value);  
-                     ol.append(li);              
+
+                    if (value.type === 'header'){
+                        li = $('<li>',{'data-name':key, 'data-value':value.label, class:'header-attr'}).html(value.label); 
+                        li.append($('<ol>')); 
+                        root.append(li); 
+                        current = li.find('ol');  
+                        header = current;
+                    }
+                    else if (value.type === 'section'){
+                        li = $('<li>',{'data-name':key, 'data-value':value.label, class:'section-attr'}).html(value.label); 
+                        li.append($('<ol>')); 
+                        header.append(li); 
+                        current = li.find('ol');
+                    }
+                    else{
+                        li = $('<li>',{'data-name':key, 'data-value':value.label, class:'attr'}).html(value.label); 
+                        li.append($('<ol>')); 
+                        current.append(li); 
+                    }           
                 });
 
             });
-            $('#share-attrs').append(ol);
+            $('#share-attrs').append(root);
 
 
             $('#lstAttr').bonsai({
@@ -323,7 +327,8 @@ function display_field(select){
 	
 }
     
-function share_form(){
+function share_form(){            
+    var listAttributes =  $('#share-attrs').serializeArray();
 	var form_data = $('#data-form').serializeArray();	
 
 	check=true;
@@ -333,36 +338,35 @@ function share_form(){
 	
 	if (check===true){
 	    if(form1.checkValidity()){
-                if (email_share_current === email_share_before){
-                display_msg('info', 'Shared succesfully');
-                if (check_form_edit())
-                    save_form();
-                return;
-            }else{
-                email_share_before = email_share_current;
-            }
-                if (!check_form_edit()){
-                    form_data = "-1";
-                }
-                form_data_before = $('#data-form').serialize();
-	    	$.ajax({
-	  		  type: "POST",
-	  		  url: "<?php echo base_url() ?>index.php/form/share/",
-	  		  dataType: "json",
-	  		  data: {form_id: $('#form-id').val(), type_id:$('#cmb-type-id').val(), title:$('#form-title').val(), to_user: email_share_current,data_form: form_data},
-	  		  success:function(data) {
-	  			$('#share-form').modal('hide');
-				display_msg('info', 'Shared succesfully');				
-	  		  }
-	  	});
-    }
+            if (check_form_edit())
+                save_form();                
             else
-                display_msg('Warning', 'No form to be shared');
-        } else {
-            display_msg('Warning', msg);
-        }
-
+                form_data = "-1";
+            
+            form_data_before = $('#data-form').serialize();
+	    	
+            $.ajax({
+	  		   type: "POST",
+	  		   url: "<?php echo base_url() ?>index.php/form/share/",
+	  		   dataType: "json",
+	  		   data: {
+                    form_id: $('#form-id').val(), 
+                    type_id:$('#cmb-type-id').val(), 
+                    title:$('#form-title').val(), 
+                    to_user:$('#email-contact-share').val(),
+                    data_form: form_data,
+                    list_attrs: listAttributes
+                },
+	  		   success:function(data) {
+				    display_msg('info', 'Shared succesfully');
+                }
+            });
+        }else
+            display_msg('Warning', 'No form to be shared');
+    } else{
+        display_msg('Warning', msg);
     }
+}
 
 function download_form(){
 	window.location.href= "<?php echo base_url()?>index.php/form/download/"+$('#form-id').val();
@@ -438,7 +442,7 @@ function save_form(){
     }
 }
 
-    function define_relation(){
+    function autofill(){
 
         var action='<?php if ($this->session->userdata('select') == 'detail') echo "form"; else echo "template"; ?>';
         var id=<?php if ($this->session->userdata('select') == 'detail') echo "$('#form-id').val();"; else echo "$('#cmb-type-id').val();"; ?>;
@@ -461,18 +465,21 @@ function save_form(){
                 attrs_current = data;
                 $.each(data, function (i, item){
                     $.each(item, function (key, value){
-                        tr = $('<tr>');
-                        tr.append($('<td>').html(value));
-                        td2 = $('<td>');
-                        txt = 'Please select form to fill';
-                        prefix = 'f';
-                        td2.append($('<select>',{id: prefix+key, name: prefix+key, onchange: 'display_field(this)'}).append($('<option>',{value:''}).html(txt)));
+                        if (value.type !== 'header' && value.type !== 'section'){
+                            tr = $('<tr>');
+                            tr.append($('<td>').html(value.label));
+                            td2 = $('<td>');
+                            txt = 'Please select form to fill';
+                            prefix = 'f';
+                            td2.append($('<select>',{id: prefix+key, name: prefix+key, onchange: 'display_field(this)'}).append($('<option>',{value:''}).html(txt)));
 
-                        prefix = 'd';
-                        td3 = $('<td>').append($('<div>',{id: prefix+key}));
-                        tr.append(td2);
-                        tr.append(td3);
-                        $('#body-template-attr').append(tr);
+                            prefix = 'd';
+                            td3 = $('<td>').append($('<div>',{id: prefix+key}));
+                            tr.append(td2);
+                            tr.append(td3);
+                            $('#body-template-attr').append(tr);
+
+                    }
                     });
 
                 });
@@ -481,7 +488,7 @@ function save_form(){
         $('#fill-form').modal();
     }
     
-    function load_template_attr(){
+    function load_attributes(){
             $.ajax({
             type: "POST",
             url: "<?php echo base_url() ?>index.php/form/get_attr/" + $('#template-relate').val(),
@@ -496,7 +503,8 @@ function save_form(){
                 var prefix= 'f';
                 $.each(data, function (i, item){
                     $.each(item, function (key, value){
-                        option += '<option value="'+key+'">'+value+'</option>';
+                        if (value.type !== 'header' && value.type !== 'section')
+                            option += '<option value="'+key+'">'+value.label+'</option>';
                     });
                 });
                 $.each(attrs_current, function (i, item){                   
@@ -702,20 +710,19 @@ function process_upload(button, type) {
                     <div class="modal-body" id='form-message-content'>
 				<div class="panel-heading">
 				
-					<h4>Form already shared with</h4>
-					<div id='share-info' class='share-info'></div>	
-					
-					<h4>Sharing modification</h4>			
+                    <div class='block-left-share'>
+                        <h4>Form already shared with</h4>
+                        <div id='share-info' class='share-info'></div>  
+                    </div>
 
-					<select id='email-contact-share' onchange='load_share()' class="form-control">
- 
-                    </select>
+					<div class='block-right-share'>
+                        <h4>Sharing modification</h4>			
+                        <select id='email-contact-share' onchange='load_share()' class="form-control"></select>
        
-       				<div id = 'share-attrs' class='share-attr-info'></div>
-				
-				
-					<!-- <input style="display: none;" type="email" id="txt-email-share" class="form-control input-sm" placeholder="Type emails here..." value=""> -->
-					<button class="btn btn-info" id='btn-send' onclick="share_form()">Share</button>
+                        <form id = 'share-attrs' class='share-attr-info'></form>
+				        <button class="btn btn-info" id='btn-send' onclick="share_form()">Share</button>
+
+                    </div>
        				
 				</div>
                     </div>
@@ -728,46 +735,46 @@ function process_upload(button, type) {
             <!-- /.modal-dialog -->
         </div>
 
-        <div class="modal" id="fill-form" tabindex="-1" role="dialog"
-             aria-labelledby="myModalLabel" aria-hidden="true">
-            <div class="modal-dialog form-review">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal"
-                                aria-hidden="true">&times;</button>
-                        <h4 class="modal-title" id="myModalLabelForm">Auto-Fill form</h4>
+            <div class="modal" id="fill-form" tabindex="-1" role="dialog"
+                 aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog form-review">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal"
+                                    aria-hidden="true">&times;</button>
+                            <h4 class="modal-title" id="myModalLabelForm">Auto-Fill form</h4>
+                        </div>
+                        <div class="modal-body" id='form-message-content'>
+                        <form id='form-relation-data' onsubmit="return false">
+                        <input id='submit-relation' type="submit" style="display: none" value='submit'>
+                        <table id='lst-attr' class='form-auto-generate'>
+                            <thead>
+                            <tr>
+                                <th style="width: auto;min-width:270px">Your Current Form's fields</th>
+                                        <th colspan="2" >Form related 's fields
+                        <select id='template-relate' required
+                                onchange="load_attributes()">
+                            <option value=''>Please Select Previous Form to Auto-Fill</option>
+                        </select>
+                                        </th>
+                            </thead>
+                            <tbody id = 'body-template-attr'>
+                                
+                            </tbody>
+                                        </td>
+                            </tr>
+                        </table>
+                    </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-info" id='btn-send' onclick="fill_form()">Auto-Fill</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
                     </div>
-                    <div class="modal-body" id='form-message-content'>
-                    <form id='form-relation-data' onsubmit="return false">
-                    <input id='submit-relation' type="submit" style="display: none" value='submit'>
-                    <table id='lst-attr' class='form-auto-generate'>
-                        <thead>
-                        <tr>
-                            <th style="width: auto;min-width:270px">Your Current Form's fields</th>
-                                    <th colspan="2" >Form related 's fields
-                    <select id='template-relate' required
-                            onchange="load_template_attr()">
-                        <option value=''>Please Select Previous Form to Auto-Fill</option>
-                    </select>
-                                    </th>
-                        </thead>
-                        <tbody id = 'body-template-attr'>
-                            
-                        </tbody>
-                                    </td>
-                        </tr>
-                    </table>
-                </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-info" id='btn-send' onclick="fill_form()">Auto-Fill</button>
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    </div>
+                    <!-- /.modal-content -->
                 </div>
-                <!-- /.modal-content -->
+                <!-- /.modal-dialog -->
             </div>
-            <!-- /.modal-dialog -->
-        </div>
         
         
 	<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
@@ -813,11 +820,11 @@ if (isset ( $own ))
 							?>
 					
 				<button type="button" class="btn btn-primary"
-					onclick="new_message('#share-form')">Share</button>
+					onclick="load_shared_info(); new_message('#share-form');">Share</button>
 				<?php }?>
                             				<button id='btn-download' class="btn btn-success" type="button" onclick="download_form()" 
                             				>Download</button>
-                                                        <button class="btn btn-warning" type="button" onclick="define_relation()">Auto-Fill</button>
+                                                        <button class="btn btn-warning" type="button" onclick="autofill()">Auto-Fill</button>
 			</div>
 		</div>
 
@@ -836,13 +843,13 @@ if (isset ( $own ))
 								onchange="load_form()">
 								<option value=''>Please Select Document</option>
                                         <?php
-																																								foreach ( $group_types as $group ) {
-																																									echo "<optgroup label='$group[0]'>";
-																																									foreach ( $group [1] as $type )
-																																										echo "<option value='" . $type->getId () . "'>" . $type->getTitle () . "</option>";
-																																									echo "</optgroup>";
-																																								}
-																																								?>
+										foreach ( $group_types as $group ) {
+											echo "<optgroup label='$group[0]'>";
+											foreach ( $group [1] as $type )
+												echo "<option value='" . $type->getId () . "'>" . $type->getTitle () . "</option>";
+											echo "</optgroup>";
+										}
+										?>
                                     </select>
 
 						</div>

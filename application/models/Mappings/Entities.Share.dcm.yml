@@ -7,6 +7,10 @@ Entities\Share:
       id: true
       generator:
         strategy: AUTO
+    attrs:
+      type: string
+      length: 2147483647
+      nullable: true
   manyToOne:
     form:
       targetEntity: Form
