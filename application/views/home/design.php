@@ -2,6 +2,7 @@
       href="<?php echo base_url(); ?>vendor/css/vendor.css" />
 <link rel="stylesheet"
       href="<?php echo base_url(); ?>dist/formbuilder.css" />
+<script src="<?php echo base_url(); ?>js/formless.js"></script>
 
 <script type="text/javascript">
     var template_before = '';
@@ -63,7 +64,9 @@
                 var option='<option value="">'+txt+'</option>';
                 $.each(data, function (i, item){
                     $.each(item, function (key, value){
-                        option += '<option value="'+key+'">'+value+'</option>';
+                        if (value.type !== 'header' && value.type !== 'section'){
+                            option += '<option data-type="'+value.type+'" value="'+key+'">'+value.label+'</option>';
+                        }
                     });
                 });
                 $.each(attrs_current, function (i, item){                   
@@ -120,6 +123,8 @@
     }
 
     function discard_form() {
+        jq('#confirm-modal').modal('hide');
+
         form_id = $('#cmb-type-id').val();
         if (form_id != '') {
             $.ajax({
@@ -164,14 +169,15 @@
                 attrs_current = data;
                 $.each(data, function (i, item){
                     $.each(item, function (key, value){
-                        tr = $('<tr>');
-                        tr.append($('<td>').html(value));
-                        td2 = $('<td>');
-                        txt = 'Please select template to define';
-                        td2.append($('<select>',{id: key, name: key}).append($('<option>',{value:''}).html(txt)));
-                        tr.append(td2);
-                        $('#body-template-attr').append(tr);
-
+                        if (value.type !== 'header' && value.type !== 'section'){
+                            tr = $('<tr>');
+                            tr.append($('<td>').html(value.label));
+                            td2 = $('<td>');
+                            txt = 'Please select template to define';
+                            td2.append($('<select>',{id: key, name: key, 'data-type':value.type, 'onchange': 'matchType(this)'}).append($('<option>',{value:''}).html(txt)));
+                            tr.append(td2);
+                            $('#body-template-attr').append(tr);
+                        }
                     });
 
                 });
@@ -199,6 +205,7 @@
             });
         });
     }
+
     
     function define_form(){
         $('#submit-relation').click();
@@ -216,15 +223,73 @@
         }
     }
 
+    function display_confirm(title, msg, func){
+        $('#myModalLabel2').html(title);
+        $('#message-content2').html(msg);
+        jq('#confirm-modal').modal();
+        $('#btn-yes').attr('onclick',func);
+    }
+
+
+    $( document ).ready(function() {
+        jq('.tooltip-demo').tooltip({
+            selector: "[data-toggle=tooltip]",
+            container: "body"
+        });
+
+        $('#cmb-type-id').change(function(){
+            if ($(this).val() == ""){
+                //disable all buttons
+                $('#btn-relation').attr('disabled',true);
+                $('#btn-discard').attr('disabled',true);
+                $('#btn-save').attr('disabled',true);
+                $('#btn-preview').attr('disabled',true);
+
+            }
+            else{
+                //enable all buttons
+                $('#btn-relation').attr('disabled',false);
+                $('#btn-discard').attr('disabled',false);
+                $('#btn-save').attr('disabled',false);
+                $('#btn-preview').attr('disabled',false);
+            }
+        }
+        );
+
+        $('#cmb-type-id').change();
+    });
+
+
 
 </script>
 <div id="page-wrapper">
     
+    <div class="modal" id="confirm-modal" tabindex="-1" role="dialog"
+        aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="width: 300px">
+            <div class="modal-content">
+                <div class="modal-header message">
+                    <button type="button" class="close" data-dismiss="modal"
+                        aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel2"></h4>
+                </div>
+                <div class="modal-body" id='message-content2'></div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" id='btn-yes' onclick="">Yes</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+
+
         <div class="modal" id="form-relation" tabindex="-1" role="dialog"
          aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog form-review">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header control">
                     <button type="button" class="close" data-dismiss="modal"
                             aria-hidden="true">&times;</button>
                     <h4 class="modal-title" id="myModalLabelForm">Define Form Relation</h4>
@@ -260,8 +325,8 @@
                 </form>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-info" id='btn-send' onclick="define_form()">Define</button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button class="btn btn-primary" id='btn-send' onclick="define_form()">Define</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
                 </div>
             </div>
             <!-- /.modal-content -->
@@ -273,7 +338,7 @@
          aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog form-review">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header control">
                     <button type="button" class="close" data-dismiss="modal"
                             aria-hidden="true">&times;</button>
                     <h4 class="modal-title" id="myModalLabelForm">Preview</h4>
@@ -282,7 +347,7 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
                 </div>
             </div>
             <!-- /.modal-content -->
@@ -291,18 +356,18 @@
     </div>
 
 
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+    <div class="modal" id="myModal" tabindex="-1" role="dialog"
          aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog" style="width: 300px">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header message">
                     <button type="button" class="close" data-dismiss="modal"
                             aria-hidden="true">&times;</button>
                     <h4 class="modal-title" id="myModalLabel"></h4>
                 </div>
                 <div class="modal-body" id='message-content'></div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
                 </div>
             </div>
             <!-- /.modal-content -->
@@ -313,14 +378,11 @@
 
 
     <div class='row'>
-        <div class="page-header">
-            <button id="btn-new-message" class="btn btn-primary" type="button"
-                    onclick="define_relation()">Relations</button>
-
-            <button class="btn btn-success" type="button" onclick="save_form(0)">Save</button>
-            <button class="btn btn-warning" type="button" onclick="discard_form()">Discard</button>
-            <button id="btn-new-message" class="btn btn-primary" type="button"
-                    onclick="preview_form()">Preview</button>
+        <div class="page-header tooltip-demo">
+            <button id="btn-relation" class="btn btn-primary" type="button" onclick="define_relation()" data-toggle="tooltip" data-placement="bottom" data-original-title="Define the relations amongs different templates">Relations</button>
+            <button id="btn-save" class="btn btn-primary" type="button" onclick="save_form(0)" data-toggle="tooltip" data-placement="bottom" data-original-title="Save the template">Save</button>
+            <button id="btn-discard" class="btn btn-primary" type="button" onclick='display_confirm("Warning","Do you want to delete", "discard_form()")' data-toggle="tooltip" data-placement="bottom" data-original-title="Delete permanently the template">Discard</button>
+            <button id="btn-preview" class="btn btn-primary" type="button" onclick="preview_form()" data-toggle="tooltip" data-placement="bottom" data-original-title="Review the template">Preview</button>
         </div>
 
 

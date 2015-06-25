@@ -95,45 +95,23 @@ class Form_model extends CI_Model {
     }
 
     function share_form($form_id = NULL, $title, $type_id, $status, $data, $to_user_id, $attr) {
-        if ($to_user_id == null) {
+       if ($form_id == NULL)
             $form = $this->create_or_update_form($form_id, $title, $type_id, $status, $data);
-
-            //delete old shared information
-            $share = $this->em->getRepository('Entities\Share')->findBy(array('form' => $form));
-            //->find(array('form'=>$form, 'user'=>$to_user));
-
-            if ($share != null) {
-                foreach ($share as $s) {
-                    $this->em->remove($s);
-                    $this->em->flush();
-                }
-            }
-
-            return $form;
-        }
-
-
-        $form = $this->create_or_update_form($form_id, $title, $type_id, $status, $data);
+        else
+            $form = $this->em->find('Entities\Form', $form_id);
 
         //get to users
         $to_user = $this->em->find('Entities\User', $to_user_id);
 
         //delete old shared information
-        $share = $this->em->getRepository('Entities\Share')->findBy(array('form' => $form, 'user' => $to_user));
-        //->find(array('form'=>$form, 'user'=>$to_user));
-
-        if ($share != null) {
-            foreach ($share as $s) {
-                $this->em->remove($s);
-                $this->em->flush();
-            }
-        }
+        $share = $this->em->getRepository('Entities\Share')->findOneBy(array('form' => $form, 'user' => $to_user));
 
 // 		//update shared form information
-        $share = new Entities\Share();
-        $share->setForm($form);
-        $share->setUser($to_user);
-        $share->setForm($form);
+        if ($share == null){
+            $share = new Entities\Share();
+            $share->setForm($form);
+            $share->setUser($to_user);
+        }
         $share->setAttrs($attr);
 
         $this->em->persist($share);
@@ -289,13 +267,10 @@ class Form_model extends CI_Model {
 
         $user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
         $form = $em->getRepository('Entities\Form')->findOneBy(array('id' => $form_id, 'user' => $user));
-        if ($form != null) {
-            $send = $em->getRepository('Entities\Send_history')->findByForm($form);
-            if (count($send) > 0)
-                return false;
-            return true;
-        }
-        return false;
+        $share = $em->getRepository('Entities\Share')->findBy(array('form' => $form));
+        $send = $em->getRepository('Entities\Send_history')->findBy(array('form' => $form));
+
+        return (count($share) <= 0) && (count($send) <= 0);
     }
 
     function check_own_form($form_id) {
@@ -317,6 +292,16 @@ class Form_model extends CI_Model {
 
         $share = $em->getRepository('Entities\Share')->findByUser($user);
 
+        return $share;
+    }
+
+    function get_shared_attrs_by_id($form_id) {
+        $em = $this->doctrine->em;
+
+        $user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
+        $form = $em->getRepository('Entities\Form')->findOneBy(array('id' => $form_id));
+
+        $share = $em->getRepository('Entities\Share')->findOneBy(array('user'=>$user, 'form'=>$form));
         return $share;
     }
 

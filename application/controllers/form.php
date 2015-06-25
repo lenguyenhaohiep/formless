@@ -42,8 +42,23 @@ class Form extends Base_controller {
 		if ($form_id != null) {
 			$this->load->model ( 'form_model' );
 			$form = $this->form_model->get_form_by_id ( $form_id );
+
+			$own = $this->form_model->check_own_form ( $form_id);
+
+
 			if ($form != null) {
-				echo $this->formmaker->generate_from_json ( $form->getData () );
+				if ($own)
+					echo $this->formmaker->generate_from_json ( $form->getData () );
+				else{
+					$share_form = $this->form_model->get_shared_attrs_by_id ($form_id);
+					if ($share_form == NULL)
+						$ediableFields = array();
+					else
+						$ediableFields = json_decode($share_form->getAttrs(),true);
+						
+
+					echo $this->formmaker->generate_from_json ( $form->getData (), $ediableFields);
+					}
 			}
 		}
 	}
@@ -52,33 +67,59 @@ class Form extends Base_controller {
 			$this->load->model ( 'form_model' );
 			$form = $this->form_model->get_form ( $form_id );
 			if ($form != null) {
-				echo json_encode ( $this->formmaker->get_attribute_from_json ( $form->getData () ) );
+				$own = $this->form_model->check_own_form ( $form_id);
+				if ($own)
+					echo json_encode ( $this->formmaker->get_attribute_from_json ( $form->getData () ) );
+				else{
+					$share_form = $this->form_model->get_shared_attrs_by_id ($form_id);
+					if ($share_form == NULL)
+						$ediableFields = array();
+					else
+						$ediableFields = json_decode($share_form->getAttrs(),true);
+
+					$fullFields = $this->formmaker->get_attribute_from_json ($form->getData());
+
+					$restrictedFields = array();
+					foreach ($fullFields  as $e) {
+						$field = array_keys($e)[0];
+						if (in_array($field, $ediableFields))
+							$restrictedFields[] = $e;
+					}
+					echo json_encode($restrictedFields);
+				}
+			} else {
+				echo json_encode(array());
 			}
-		} else {
-			echo '{}';
 		}
+		else
+			echo json_encode(array());
 	}
 	function discard($form_id = NULL) {
 		if ($form_id != null) {
-			$this->load->model ( 'form_model' );
-			$own = $this->form_model->check_own_form ( $form_id );
-			$msg_success = "deleted successfully";
-			$msg_err = "can't not delete, you don't have permission or this form has been sent";
-			$result = array ();
-			if ($own == true) {
-				if ($this->form_model->check_delete ( $form_id )) {
-					$result = $this->form_model->delete_from ( $form_id );
-					$result ['msg'] = $msg_success;
-					$result ['err'] = 0;
+			try{
+				$this->load->model ( 'form_model' );
+				$own = $this->form_model->check_own_form ( $form_id );
+				$msg_success = "deleted successfully";
+				$msg_err = "can't not delete, you don't have permission or this form has been sent";
+				$result = array ();
+				if ($own == true) {
+					if ($this->form_model->check_delete ( $form_id )) {
+						$result = $this->form_model->delete_from ( $form_id );
+						$result ['msg'] = $msg_success;
+						$result ['err'] = 0;
+					} else {
+						$result ['msg'] = $msg_err;
+						$result ['err'] = 1;
+					}
 				} else {
 					$result ['msg'] = $msg_err;
 					$result ['err'] = 1;
 				}
-			} else {
-				$result ['msg'] = $msg_err;
-				$result ['err'] = 1;
+				echo json_encode ( $result );
 			}
-			echo json_encode ( $result );
+			catch(Exception $e){
+				echo 0;
+			}
 		}
 	}
 	function get_request_data() {
@@ -94,9 +135,10 @@ class Form extends Base_controller {
 		$data ['to_email'] = $this->input->post ( 'to_user' );
 		$data ['message'] = $this->input->post ( 'message' );
 		$data ['from_user_id'] = $this->user_model->get_id_from_email ( $this->session->userdata ( 'identity' ) );
-		
 		$data ['data'] = $this->input->post ( 'data_form' );
 		$data ['attrs'] = $this->input->post ( 'list_attrs');
+		
+
 		// get template from type
 		if ($data ['form_id'] != "") {
 			// update from current form
@@ -107,11 +149,45 @@ class Form extends Base_controller {
 			$data ['type'] = $this->type_model->get_type ( $data ['type_id'] );
 			$data ['template_json'] = $data ['type']->getData ();
 			$template = json_decode ( $data ['template_json'], true );
+			$user = $this->user_model->get_user_from_email($this->session->userdata('identity'));
 			$template ['info'] = array (
-					'type' => $data ['type']->getTitle (),
-					'title' => $data ['title'] 
+					'type' => array('id'=>$data['type']->getId(), 
+									'title'=>$data ['type']->getTitle ()),
+					'title' => $data ['title'] ,
+					'owner' => array(
+									'firstname'=> $user->getFirstName(),
+									'lastname'=>$user->getLastName(),
+									'email'=>$this->session->userdata('identity')),
+					'creation' => new DateTime()
 			);
 			$data ['template_json'] = json_encode ( $template );
+		}
+
+
+		// check ownership
+		if ($data ['form_id'] == ''){
+			$data ['own'] = true;
+			$lstAttrs = $this->formmaker->get_attribute_from_json ($data ['template_json']);
+			$data ['ediableFields'] = array();
+			foreach ($lstAttrs as $a) {
+				$data ['ediableFields'][] = array_keys($a)[0];
+			}
+
+		}
+		else{
+			$data ['own'] = $this->form_model->check_own_form ( $data ['form_id']);
+			$share_form = $this->form_model->get_shared_attrs_by_id ($data ['form_id']);
+
+			if ($data['own'] == true){
+				$lstAttrs = $this->formmaker->get_attribute_from_json ($data ['template_json']);
+				$data ['ediableFields'] = array();
+				foreach ($lstAttrs as $a)
+					$data ['ediableFields'][] = array_keys($a)[0];
+			}else 
+				if ($share_form == NULL)
+					$data ['ediableFields'] = array();
+				else
+					$data ['ediableFields'] = json_decode($share_form->getAttrs(),true);
 		}
 
 		// process requested shared information
@@ -126,7 +202,7 @@ class Form extends Base_controller {
 			else
 				$data ['form_filled'] = $data ['template_json'];
 		} else
-			$data ['form_filled'] = $this->formmaker->fill_data ( $data ['template_json'], $data ['data'] );
+			$data ['form_filled'] = $this->formmaker->fill_data ( $data ['template_json'], $data ['data'], $data ['own'], $data ['ediableFields']);
 		return $data;
 	}
 	function save() {
@@ -164,7 +240,7 @@ class Form extends Base_controller {
 		
 		if ($data ['to_email'] == '') {
 			$share = $this->form_model->share_form ( $data ['form_id'], $data ['title'], $data ['type_id'], $status = 1, $data ['form_filled'], null, $data['attrs']);
-			echo $share->getId ();
+			echo $share->getForm()->getId ();
 		} else {
 			$list_emails = explode ( ",", $data ['to_email'] );
 			
@@ -173,7 +249,7 @@ class Form extends Base_controller {
 				$to_user_id = $this->user_model->get_id_from_email ( trim ( $email ) );
 				$share = $this->form_model->share_form ( $data ['form_id'], $data ['title'], $data ['type_id'], $status = 1, $data ['form_filled'], $to_user_id, $data['attrs']);
 				
-				echo $share->getId ();
+				echo $share->getForm()->getId ();
 			}
 		}
 	}
@@ -271,12 +347,14 @@ class Form extends Base_controller {
 		if ($form_id != '') {
 			$share = $this->form_model->get_share_by_form ( $form_id );
 			foreach ( $share as $s ) {
-				$user = $s->getUser ();
-				$firstname = $user->getFirstName ();
-				$lastname = $user->getLastName ();
-				$e = $user->getEmail ();
-				$email = "$firstname $lastname ($e)";
-				$result [] = array('email'=>$email,'attrs'=>json_encode($s->getAttrs()));
+				if ($s->getAttrs() != ''){
+					$user = $s->getUser ();
+					$firstname = $user->getFirstName ();
+					$lastname = $user->getLastName ();
+					$e = $user->getEmail ();
+					$email = "$firstname $lastname ($e)";
+					$result [] = array('email'=>$email,'attrs'=>$s->getAttrs());
+				}
 			}
 		}
 		echo json_encode ( $result );
@@ -294,6 +372,7 @@ class Form extends Base_controller {
 		}
 		
 		foreach ( $shared as $f ) {
+			$f = $f->getForm();
 			$type_id = $f->getType ()->getId ();
 			$type_tile = $f->getType ()->getTitle ();
 			$form_id = $f->getId ();
@@ -332,20 +411,84 @@ class Form extends Base_controller {
 				json_encode ( '{}' );
 		}
 	}
-	function download($form_id = NULL) {
-		if ($form_id != NULL) {
-			$this->load->model ( 'form_model' );
-			$form = $this->form_model->get_form ( $form_id );
-			$this->load->helper ( 'download' );
-			$name = $this->sanitize_file_name ( $form->getTitle () ) . ".txt";
-			$data = json_encode ( json_decode ( $form->getData (), true ), JSON_PRETTY_PRINT );
-			force_download ( $name, $data );
-		} else {
-			echo "no form to download";
-		}
+	function download() {
+		$data = $this->get_request_data();
+		$text = $data ['form_filled'];
+		$path = $data['title'] != "" ? sanitize_file_name($data['title']) : 'untitled';
+		echo $path;
 	}
+
+	function getfile(){
+		$this->load->helper('download');
+		force_download($this->session->userdata('i'),$this->session->userdata('j'));
+	}
+
+	function convertpdf(){
+		$data = $this->get_request_data();
+		$text = json_encode ($data ['form_filled'], JSON_PRETTY_PRINT);
+		$path = $data['title'] != "" ? sanitize_file_name($data['title']) : 'untitled';
+	}
+
 	function sanitize_file_name($str = '') {
 		$sanitized = preg_replace ( '/[^a-zA-Z0-9-_\.]/', '', $str );
 		return $sanitized;
+	}
+
+	function view_upload(){
+		$file = $this->input->post('file');
+		try{
+			$data = json_decode($file,true);
+			$form_id = isset($data['info']['id']) ? $data['info']['id'] : '';
+			$type_id = isset($data['info']['type']['id']) ? $data['info']['type']['id'] : '';
+			$title = $data['info']['title'];
+			$form = $this->formmaker->generate_from_json ( $file );
+			$result = array(
+				'form_id'	=> $form_id,
+				'type_id'	=> $type_id,
+				'title'		=> $title,
+				'form'		=> $form 
+				);
+			echo json_encode($result);
+
+		} catch(Exception $e){
+			echo json_encode(array());
+		}	
+	}
+
+	function fill_upload(){
+		$file = $this->input->post('file');
+		try{
+			$data = json_decode($file,true);
+			$form_id = isset($data['info']['id']) ? $data['info']['id'] : '';
+			$type_id = isset($data['info']['type']['id']) ? $data['info']['type']['id'] : '';
+			$title = $data['info']['title'];
+			$attrs = $this->formmaker->get_attribute_from_json($file);
+			$data_array = $this->formmaker->get_data_form_json($file);
+			$result = array(
+				'form_id'	=> $form_id,
+				'type_id'	=> $type_id,
+				'title'		=> $title,
+				'attributes'=> $attrs,
+				'data' 		=> $data_array
+				);
+			echo json_encode($result);
+
+		} catch(Exception $e){
+			echo json_encode(array());
+		}
+	}
+
+	function sign(){
+		$this->load->model('form_model');			
+		$this->load->model('user_model');
+
+		$form_id = $this->input->post('form_id');
+		if ($form_id != NULL){
+			$form = $this->form_model->get_form ($form_id);
+			$cert = $this->user_model->load_user_pair_key();
+			echo 'sign';
+			return;
+		}
+		echo '';
 	}
 }

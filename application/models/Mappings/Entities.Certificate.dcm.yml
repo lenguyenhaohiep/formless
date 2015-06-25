@@ -15,15 +15,6 @@ Entities\Certificate:
       type: string
       length: 2147483647
       nullable: false
-    valid_from:
-      type: datetime
-      nullable: false
-    valid_to:
-      type: datetime
-      nullable: false
-    cert:
-      type: string
-      length: 2147483647
   oneToOne:
     user:
       targetEntity: User

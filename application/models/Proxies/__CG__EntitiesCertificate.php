@@ -126,7 +126,7 @@ class Certificate extends \Entities\Certificate implements \Doctrine\ORM\Proxy\P
 
     public function __sleep()
     {
-        return array('__isInitialized__', 'id', 'secret_key', 'pubic_key', 'valid_from', 'valid_to', 'cert', 'user');
+        return array('__isInitialized__', 'id', 'secret_key', 'pubic_key', 'user');
     }
 
     public function __clone()

@@ -13,14 +13,14 @@ $lang['form_sent']='Sent';
 $lang['form_draft']='Draft';
 
 $lang['search_form']='Search';
-$lang['form_create']='Create';
-$lang['form_design']='Form Designer';
+$lang['form_create']='Fill';
+$lang['form_design']='Design';
 $lang['form_templates']='Templates';
 $lang['user_profile']='User Profile';
 $lang['settings']='Settings';
 $lang['logout']='Logout';
 $lang['signature_page_title']='Signature Settings';
-$lang['form_mydocument']='My Forms';
+$lang['form_mydocument']='Form';
 $lang['document_page_title']='My Forms';
 $lang['design_page_title']='Design';
 $lang['detail_page_title']='Detail';

@@ -86,10 +86,9 @@ body {
     font-family: "San Francisco Text",sans-serif;
 }
 .btn {
-    font-size: 12px;
     min-width: 80px;
-    text-transform: uppercase;
     width: auto;
+    font-size: inherit;
 }
 .component-form{
 	display: inline-block; 
@@ -124,14 +123,16 @@ body {
     line-height: 1.42857;
     padding: 8px;
 }
+
+.form-auto-generate th {
+    padding-left: 8px;
+}
 .form-auto-generate h4 {
-    border-bottom: 1px solid #1abc9c;
-    color: #1abc9c;
+    border-bottom: 1px solid black;
     font-weight: bold;
     padding-bottom: 5px;
 }
 .form-auto-generate h3 {
-    color: #1abc9c;
     font-weight: bold;
 }
 .form-auto-generate input[type="text"], input[type="number"], input[type="email"], textarea {
@@ -217,7 +218,7 @@ body {
 }
 
 .header-attr label {
-    color: #23527c;
+    color: #1abc9c;
 }
 
 .section-attr label {
@@ -225,5 +226,70 @@ body {
 }
 .attr label {
     color: black;
+}
+
+.control {
+    background-color: #337ab7;
+    border-radius: 4px 4px 0 0;
+}
+.control h4 {
+    color: white;
+}
+
+.message {
+    background-color: #be0545;
+    border-radius: 4px 4px 0 0;
+}
+.message h4 {
+    color: white;
+}
+
+.close {
+    color: white;
+    font-weight: normal;
+    opacity: 1;
+    text-shadow: 0 0 0 #fff;
+}
+.close:hover {
+    color: white;
+    opacity: 0.9;
+}
+
+.navbar {
+    background-color: #be0545;
+}
+.navbar-default .navbar-brand {
+    color: white;
+    text-transform: uppercase;
+    font-weight: 300;
+}
+.nav .open a.dropdown-toggle:focus {
+    background-color: #be0545;
+    color: white;
+}
+
+.nav .open a.dropdown-toggle:hover {
+    background-color: #be0545;
+}
+
+.nav .open a.dropdown-toggle {
+    background-color: #be0545;
+}
+
+.navbar-default .navbar-brand:hover {
+    color: white;
+}
+
+.navbar-default .navbar-brand:focus {
+    color: white;
+}
+.dropdown-toggle {
+    color: white;
+}
+.nav li a.dropdown-toggle:hover {
+    background-color: #be0545;
+}
+.dropdown-toggle:hover {
+    color: white;
 }
 
