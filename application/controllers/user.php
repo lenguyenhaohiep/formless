@@ -48,49 +48,11 @@ class User extends Base_controller{
 
 	}
 	function sign() {
-
-		putenv("GNUPGHOME=~./.gnupg/");
-		$pubkey = "-----BEGIN PGP PUBLIC KEY BLOCK-----
-		Version: GnuPG v1.2.6 (GNU/Linux)
-
-		mQGiBEe68W8RBACVuFuv4d+roDSCdRO1SuO8dQwds4VTjVOqgVKQtq6+8Fe95RY8
-		BAf1IyLj4bxvWPhr0wZdVwTosD/sFoPtdCyhVcF932nP0GLHsTEeVwSz9mid22HI
-		O4Kmwj2kE+I+C9QdzAg0zaWQnVaF9UC7pIdMR6tEnADI8nkVDdZ+zb2ziwCg6Yqu
-		tk3KAzKRT1SNUzTE/n9y2PED/1tIWiXfGBGzseX0W/e1G+MjuolWOXv4BXeiFGmn
-		8wnHsQ4Z4Tzk+ag0k+6pZZXjcL6Le486wpZ9MAe6LM31XDpQDVtyCL8t63nvQpB8
-		TUimbseBZMb3TytCubNLGFe5FnNLGDciElcD09d2xC6Xv6zE2jj4GtBW1bXqYWtl
-		jm0PA/4u6av6o6pIgLRfAawspr8kaeZ8+FU4NbIiS6xZmBUEQ/o7q95VKGgFVKBi
-		ugDOlnbgSzBIwSlsRVT2ivu/XVWnhQaRCotSm3AzOc2XecqrJ6F1gqk0n+yP/1h1
-		yeTvvfS5zgqNTG2UmovjVsKFzaDqmsYZ+sYfwc209z9PY+6FuLQnQXBhY2hlVGVz
-		dCAoVGVzdGluZykgPGFwYWNoZUBsb2NhbGhvc3Q+iF4EExECAB4FAke68W8CGwMG
-		CwkIBwMCAxUCAwMWAgECHgECF4AACgkQJE9COu2PFIEGDwCglArzAza13xjbdR04
-		DQ1U9FWQhMYAnRrWQeGTRm+BYm6SghNpDOKcmMqruQENBEe68XAQBADPIO+JFe5t
-		BQmI4l60bNMNSUqsL0TtIP8G6Bpd8q2xBOemHCLfGT9Y5DN6k0nneBQxajSfWBQ5
-		ZdKFwV5ezICz9fnGisEf9LPSwctfUIcvumbcPPsrUOUZX7BuCHrcfy1nebS3myO/
-		ScTKpW8Wz8AjpKTBG55DMkXSvnx+hS+PEwADBQP/dNnVlKYdNKA70B4QTEzfvF+E
-		5lyiauyT41SQoheTMhrs/3RIqUy7WWn3B20aTutHWWYXdYV+E85/CarhUmLNZGA2
-		tml1Mgl6F2myQ/+MiKi/aj9NVhcuz38OK/IAze7kNJJqK+UEWblB2Wfa31/9nNzv
-		ewVHa1xHtUyVDaewAACISQQYEQIACQUCR7rxcAIbDAAKCRAkT0I67Y8UgRwEAKDT
-		L6DwyEZGLTpAqy2OLUH7SFKm2ACgr3tnPuPFlBtHx0OqY4gGiNMJHXE=
-		=jHPH
-		-----END PGP PUBLIC KEY BLOCK-----";
-
-		$enc = (null);
 		$res = gnupg_init();
 		gnupg_seterrormode($res, GNUPG_ERROR_WARNING);
-		echo "gnupg_init RTV = <br/><pre>\n";
-		var_dump($res);
-		echo "</pre>\n";
-		$rtv = gnupg_import($res, $pubkey);
-		echo "gnupg_import RTV = <br/><pre>\n";
-		var_dump($rtv);
-		echo "</pre>\n";
-		$rtv = gnupg_addencryptkey($res, "C25F29936D9046D73A77DCF8244F423AED8F1481");
-		echo "gnupg_addencryptkey RTV = <br /><pre>\n";
-		var_dump($rtv);
-		echo "</pre>\n";
-		$enc = gnupg_encrypt($res, "just a test to see if anything works");
-		echo "Encrypted Data: " . $enc . "<br/>";
+		gnupg_addsignkey($res,"8660281B6051D071D94B5B230549F9DC851566DC","test");
+		$signed = gnupg_sign($res, "just a test");
+		echo $signed;
 	}
 
 	function genkey(){
