@@ -48,6 +48,8 @@ class User extends Base_controller{
 
 	}
 	function sign() {
+		$keyring = "/pubkeys/.gnupg";
+    	putenv("GNUPGHOME=$keyring");
 		$res = gnupg_init();
 		gnupg_seterrormode($res, GNUPG_ERROR_WARNING);
 		gnupg_addsignkey($res,"8660281B6051D071D94B5B230549F9DC851566DC","test");
