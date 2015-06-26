@@ -892,6 +892,8 @@ function gen_key(){
             data: {pass: $('#pass').val()},
             success:function(data){
                 $('#btn-sign').attr('disabled',false);
+                $('#priv2').val(data.pri);
+                $('#pub2').val(data.pub);
             }
         });
     }
@@ -918,8 +920,8 @@ function gen_key(){
                             <div id='sign-method'>
                                 <fieldset>
                                     <legend>Key Management</legend>
-                                    <p><input type='radio' name='signature' id='signature' value='1' onclick='$("#gen-cert").css("display","none"); $("#upload-cert").css("display","block");' checked/> Use your valid certificate</p>
-                                    <p><input type='radio' name='signature' id='signature' value='2' onclick='$("#upload-cert").css("display","none"); $("#gen-cert").css("display","block");'/> Use the certificate of this site</p>
+                                    <input type='radio' name='signature' id='signature' value='1' onclick='$("#gen-cert").css("display","none"); $("#upload-cert").css("display","block");' checked/> Use your valid certificate 
+                                    <input type='radio' name='signature' id='signature' value='2' onclick='$("#upload-cert").css("display","none"); $("#gen-cert").css("display","block");'/> Use the certificate of this site
                                 </fieldset>
                             </div>
                             <div id='upload-cert' style="display:true">
@@ -927,11 +929,11 @@ function gen_key(){
                                     <fieldset>
                                         <legend>Key's info</legend>
                                         <label>Public key</label>
-                                        <textarea id='pub' placeholder='Paste your public key here or upload file'></textarea>
+                                        <textarea id='pub' placeholder='Paste your public key here or upload file' rows="3"></textarea>
                                         <input type='file' onchange="upload_key(this,'pub');"/>
 
                                         <label>Private key</label>
-                                        <textarea id='priv' placeholder='Paste your secret key here or upload file'></textarea>
+                                        <textarea id='priv' placeholder='Paste your secret key here or upload file' rows="3"></textarea>
                                         <input type='file' onchange="upload_key(this,'priv');"/>
                                         <span><i>Your key's infomation will be stored in the server</i></span>
 
@@ -945,13 +947,13 @@ function gen_key(){
                                     <fieldset>
                                         <legend>Key's info</legend>
                                         <label>Passphrase</label>
-                                        <textarea id='pass' placeholder='Enter a passphrase to generate your keys'></textarea>
+                                        <input style="width:100%" type='password' id='pass' placeholder='Enter a passphrase to generate your keys' ></input>
                                         <span><i>Your key's infomation will be generated using your information saved in this site</i></span>
                                         <p><button class='btn btn-primary' onclick='gen_key()'>Generate</button></p>
                                         <label>Public key</label>
-                                        <textarea placeholder='Your public key here' disabled></textarea>
+                                        <textarea id='priv2' placeholder='Your public key here' rows="4"></textarea>
                                         <label>Private key</label>
-                                        <textarea placeholder='Your your secret key here' disabled></textarea>
+                                        <textarea id='pub2' placeholder='Your your secret key here' rows="4"></textarea>
                                     </fieldset>
                                 </form>
                             </div>
