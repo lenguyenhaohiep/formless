@@ -6,7 +6,7 @@ class Securitygpg{
 
 	}
 
-	function verify($signed_message, $public_key){
+	function verify($signed_message, $public_key, $keyinfo){
 		$plaintext = "";
 		$gnupg = new gnupg();
 		$gnupg->seterrormode(gnupg::ERROR_EXCEPTION);
@@ -15,7 +15,11 @@ class Securitygpg{
 			$info = $gnupg->verify($signed_message, false, $plaintext);
 			if($info !== false){
 				  $fingerprint = $info[0]['fingerprint'];
-				  return $gnupg->keyinfo($fingerprint);
+				  $fingerprint_publickey = $public['fingerprint'];
+
+				  //in case success, it will return FINGERPRINT, otherwise, KEYID 
+				  $keyinfo = $fingerprint;
+				  return $fingerprint == $fingerprint_publickey;
 			}
 			else{
 				echo "verify failed";
@@ -25,7 +29,7 @@ class Securitygpg{
   			echo 'Message: ' .$e->getMessage();
 		}
 
-		return null;
+		return false;
 	}
 
 	function sign($message, $private_key, $pass_phrase){

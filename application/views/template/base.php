@@ -13,6 +13,7 @@
 
     </head>
     <body>
+        <img style='display:none' id='loading-image' class='centered' src="<?php echo base_url()?>js/ajax-loader.gif">
         <div id="wrapper">
             <nav style="margin-bottom: 0" role="navigation" class="navbar navbar-default navbar-static-top">
                 <?php echo $logo; ?>
@@ -33,5 +34,13 @@
     		$("#page-wrapper").css('max-height', h - $('.navbar').height() + 'px');
     		$("#page-wrapper").css('min-height', h - $('.navbar').height() + 'px');
     	});	
+
+        $(document).ajaxStart(function () {
+            $( "#loading-image" ).css('display','block');
+        });
+         
+        $(document).ajaxStop(function () {
+            $( "#loading-image" ).css('display','none');
+        });
     </script>
 </html>

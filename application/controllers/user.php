@@ -17,73 +17,6 @@ class User extends Base_controller{
 	}
 	
 
-	function certificate() {
-		$config['certificate_rules'] =  array(
-				'name' => array(
-						'field' => 'name',
-						'label' => 'Name',
-						'rules' => 'trim|required|xss_clean'
-				),
-				'email' => array(
-						'field' => 'email',
-						'label' => 'Email',
-						'rules' => 'trim|required|valid_email'
-				),
-				'subject' => array(
-						'field' => 'subject',
-						'label' => 'Subject',
-						'rules' => 'trim|required|xss_clean'
-				),
-				'message' => array(
-						'field' => 'message',
-						'label' => 'Message',
-						'rules' => 'trim|required|xss_clean'
-				)
-		);
-		
-		$this->render_page(lang('signature_page_title'), "", 'user/certificate', '');
-	}
-	
-	function key(){
-
-			$CONFIG['gnupg_home'] = '/Applications/XAMPP/htdocs/.gnupg/';
-			$CONFIG['gnupg_fingerprint'] = 'FA451EE9877270EF1CFA99CE048A613921CCC3D6';
-   
-			$data = 'this is some confidential information';
-
-			$gpg = new gnupg();
-			putenv("GNUPGHOME={$CONFIG['gnupg_home']}");
-			$gpg->seterrormode(GNUPG_ERROR_WARNING);
-			$gpg->addencryptkey($CONFIG['gnupg_fingerprint']);
-			$encrypted =  $gpg->encrypt($data);
-			echo "Encrypted text: \n<pre>$encrypted</pre>\n";
-
-			// Now you can store $encrypted somewhere.. perhaps in a MySQL text or blob field.
-
-			// Then use something like this to decrypt the data.
-			$passphrase = 'Your_secret_passphrase';
-			$gpg->adddecryptkey($CONFIG['gnupg_fingerprint'], $passphrase);
-			$decrypted = $gpg->decrypt($encrypted);
-
-			echo "Decrypted text: $decrypted";
-
-
-
-	}
-	function sign() {
-	    $keyring = "/pubkeys/.gnupg";
-	    putenv("GNUPGHOME=$keyring");
-		$GnuPG = new gnupg();
-		$GnuPG->seterrormode(GNUPG_ERROR_WARNING);
-		$PublicData = file_get_contents('/Users/hieple/public.key');
-		$PrivateData = file_get_contents('/Users/hieple/public.key');
-
-		$PublicKey = $GnuPG->import($PublicData);
-		$PrivateKey = $GnuPG->import($PrivateData);
-
-		echo 'Public Key : ',$PublicKey['fingerprint'],' & Private Key : ',$PrivateKey['fingerprint'];
-	}
-
 	function genkey(){
 			error_reporting(E_ERROR | E_PARSE);
 			$pass = $this->input->post('pass');
@@ -140,35 +73,5 @@ class User extends Base_controller{
 		$data = $this->securitygpg->get_information($cert->getSecretKey());
 		echo json_encode($data);
 		//echo $cert->getSecretKey();
-	}
-
-	function test3(){
-		$config = array(
-		    "digest_alg" => "sha1",
-		    "private_key_bits" => 1024,
-		    "private_key_type" => OPENSSL_KEYTYPE_RSA,
-		);
-   
-		// Create the private and public key
-		$res = openssl_pkey_new($config);
-
-		// Extract the private key from $res to $privKey
-		openssl_pkey_export($res, $privKey);
-
-		// Extract the public key from $res to $pubKey
-		$pubKey = openssl_pkey_get_details($res);
-		$pubKey = $pubKey["key"];
-
-		$data = 'plaintext data goes here';
-
-		// Encrypt the data to $encrypted using the public key
-		openssl_public_encrypt($data, $encrypted, $pubKey);
-
-		// Decrypt the data using the private key and store the results in $decrypted
-		openssl_private_decrypt($encrypted, $decrypted, $privKey);
-
-	
-		$this->load->library('securitygpg');
-		$data = $this->securitygpg->get_information($privKey);
 	}
 }

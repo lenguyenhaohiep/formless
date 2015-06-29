@@ -15,9 +15,6 @@ class Form extends Base_controller {
 		$this->load->library ( 'formmaker' );
 	}
 
-	function test(){
-		echo "hiep";
-	}
 	function get_template($type_id = NULL) {
 		$this->load->library ( 'formmaker' );
 		
@@ -210,7 +207,8 @@ class Form extends Base_controller {
 		if ($data ['attrs'] != "")
 			$data ['attrs'] = $this->formmaker->get_attributes_from_requested_json($data['attrs']);
 
-		// check if you've already signed
+		// check if you've already signed, when signed, from cannot be edited, 
+		// ediableFields = array() means that you have no attribute in form to update
 		if ($data ['form_id'] != ''){
 			$signed = $this->form_model->check_signed($form_id);
 			if ($signed == true){
@@ -506,8 +504,16 @@ class Form extends Base_controller {
 		$this->load->model('form_model');			
 		$this->load->model('user_model');
 		$form_id = $this->input->post ( 'form_id' );
-
+		
 		if ($form_id != NULL){
+			$signed = $this->form_model->check_signed($form_id);
+
+			//In case you have signed the form, you cannot sign again
+			if ($signed){
+				echo "";
+				return;
+			}
+			
 			$form = $this->form_model->get_form ($form_id);
 			$cert = $this->user_model->load_user_pair_key();
 	
@@ -532,27 +538,6 @@ class Form extends Base_controller {
 
 	}
 
-	function test2(){
-		$this->load->model('user_model');
-
-		$cert = $this->user_model->load_user_pair_key();
-
-		$PublicData = $cert->getPubicKey();
-		$PrivateData = $cert->getSecretKey();
-
-		$message = "this is the messge";
-		$passphrase = "hieple";
-		$this->load->library('securitygpg');
-
-		$signed_message = $this->securitygpg->sign($message, $PrivateData, $passphrase);
-
-		echo $signed_message;
-
-		//echo "<br/>";
-
-		$verify = $this->securitygpg->verify($signed_message, $PublicData);
-		print_r($verify);
-	}
 
 	function verify($form_id = NULL){
 		$this->load->model('user_model');
@@ -565,29 +550,29 @@ class Form extends Base_controller {
 			$signed_message = $s->getData();
 			$cert = $this->user_model->load_user_pair_key($user_id);
 			$PublicData = $cert->getPubicKey();
-			$verify = $this->securitygpg->verify($signed_message, $PublicData);
+			$verify = $this->securitygpg->verify($signed_message, $PublicData, $keyinfo = "");
 			$history[] = array(
 				"firstname" => $s->getUser()->getFirstName(),
 				"lastname" 	=> $s->getUser()->getLastName(),
 				"email"		=> $s->getUser()->getEmail(),
-				"keyinfo"	=> $this->securitygpg->get_by_fingerprint($verify[0]['subkeys'][0]['fingerprint'])
-
+				"keyinfo"	=> $this->securitygpg->get_by_fingerprint($keyinfo),
+				"result"	=> $verify ? "Good Signature" : "Bad Signature",
+				"status"	=> $verify
 			);
 		}
 
 		echo json_encode($history);
 	}
 
-	function keyinfo(){
-		$this->load->model('user_model');
-		$this->load->library('securitygpg');
-
-		$cert = $this->user_model->load_user_pair_key();
-		$PublicData = $cert->getPubicKey();
-		$PrivateData = $cert->getSecretKey();
-
-		print_r($this->securitygpg->get_information($PrivateData));
-		print_r($this->securitygpg->get_information($PublicData));
-
+	function check_signed(){
+		$form_id = $this->input->post('form_id');
+		if ($form_id != null){
+			$this->load->model('form_model');
+			$signed = $this->form_model->check_signed($form_id, true);
+			echo $signed == true ? "1" : "0";
+			return;
+		}
+		
+		echo "0";
 	}
 }

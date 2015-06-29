@@ -18,7 +18,7 @@
                         </li>
 
                         <li>
-                            <a href="<?php echo base_url();?>index.php/home/sent" class="<?php if ($this->session->userdata('select') == 'sent') echo 'active';?>"><i class="fa fa-send fa-fw"></i> <?php echo lang('form_sent');?></a>
+                            <a href="<?php echo base_url();?>index.php/home/sent" class="<?php if ($this->session->userdata('select') == 'sent') echo 'active';?>"><i class="fa fa-plane fa-fw"></i> <?php echo lang('form_sent');?></a>
                         </li>
                                                 <li>
                             <a href="<?php echo base_url();?>index.php/home/create" class="<?php if ($this->session->userdata('select') == 'create') echo 'active';?>"><i class="fa fa-pencil fa-fw"></i> <?php echo lang('form_create');?></a>

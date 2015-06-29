@@ -336,11 +336,16 @@ class Form_model extends CI_Model {
         return $sign;
     }
 
-    function check_signed($form_id){
+    function check_signed($form_id, $signer = null){
         $em = $this->doctrine->em;
+        $form = $em->getRepository('Entities\Form')->findOneBy(array('id' => $form_id));
+
+        if (isset($signer)){
+            $sign = $em->getRepository('Entities\Sign')->findBy(array('form'=>$form));
+            return count($sign) > 0;
+        }
 
         $user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
-        $form = $em->getRepository('Entities\Form')->findOneBy(array('id' => $form_id));
         $sign = $em->getRepository('Entities\Sign')->findOneBy(array('user'=>$user,'form'=>$form));
         return ($sign != null);
     }

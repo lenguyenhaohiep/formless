@@ -42,7 +42,7 @@ class Formmaker {
 
 				}
 				else
-					$values[$id] = "<span>$val[0]</span><span>$val[1]</span>";
+					$values[$id] = "<span>$val[0]</span> <span>$val[1]</span>";
 
 			}
 			else

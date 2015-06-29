@@ -77,7 +77,7 @@ $( document ).ready(function() {
     <?php
     if (isset ( $form_instance )) {
             echo "$('#cmb-type-id').val('" . $form_instance->getType ()->getId () . "');";
-            echo "$('#cmb-type-id').change();";
+            //echo "$('#cmb-type-id').change();";
             echo "$('#cmb-type-id').prop('disabled',true);";
             echo "$('#form-title').val('" . $form_instance->getTitle () . "');";
             echo "$('#form-id').val('" . $form_instance->getId () . "');";
@@ -271,6 +271,7 @@ function load_form(){
                 $('#main-form').html(data);
                 form_data_before = $('#data-form').serialize();
                     <?php if ($permission == FALSE) echo "$('#data-form :input').attr('disabled', true);"?>
+                check_signed();
             }
 	});
 }
@@ -694,7 +695,7 @@ function fill_form(){
 					});
 				}
 
-				if (type === 'file'){
+				if (type === 'file' && this.multiple==true){
 					button=this;
 					div.find('img').each(function(){
 						name='';
@@ -702,6 +703,21 @@ function fill_form(){
 						
 					});
 				}
+
+                if (type === 'file' && this.multiple==false){
+                    button=this;                    
+                    var i=0;
+                    div.find('span').each(function(){
+                        var id = '#'+button.id+'-'+i;
+                        $(id).val(this.textContent);
+                        i++;
+                    });
+                    div.find('img').each(function(){
+                        name='';
+                        create_line_image(button,this.src, name);
+                        
+                    });
+                }
 			}		
 		});
 	$('#fill-form').modal('hide');
@@ -884,11 +900,13 @@ function sign_form(){
             data: {form_id: $('#form-id').val(), 'passphrase': $('#passphrase-sign').val()},
             success: function(data){
                   if (data != ''){
-                       display_msg('info', 'Saved succesfully');
-                    $('#sign-form').modal('hide');
+                        display_msg('info', 'Signed succesfully');
+                        $('#sign-form').modal('hide');
+                        setTimeout(function(){ window.location.href='<?php echo base_url();?>index.php/form/detail/'+$('#form-id').val(); }, 2000);
+
                   }
                   else{
-                        display_msg('Warning', 'Saved unsuccesfully, please retry');
+                        display_msg('Warning', 'Signed unsuccesfully, please retry');
 
                   }
             }
@@ -915,6 +933,22 @@ function gen_key(){
     }
 }
 
+function check_signed(){
+    if ($('#form-id').val() == "")
+        return;
+
+    $.ajax({
+        type: 'post',
+            url: '<?php echo base_url()?>index.php/form/check_signed',
+            data: {form_id: $('#form-id').val()},
+            success:function(data){
+                if (data == "1"){
+                    verify_form();
+                }
+            }
+    });
+}
+
 function verify_form(){
     $('#verify-content').empty();
     $('#form-verification').modal();
@@ -926,17 +960,25 @@ function verify_form(){
             success:function(data){
                 var i=1;
                 $.each(data, function(key,value){
-                    tr = $('<tr>');
+                    if (value.status == true)
+                        tr = $('<tr>',{class:'verified'});
+                    else
+                        tr = $('<tr>',{class:'failed'});
+                        
                     tr.append($('<td>').html(i));
-                    tr.append($('<td>').html(value.firstname));
-                    tr.append($('<td>').html(value.lastname));
-                    tr.append($('<td>').html(value.email));
-                    tr.append($('<td>').html(value.keyinfo.name));
-                    tr.append($('<td>').html(value.keyinfo.email));
-                    tr.append($('<td>').html(value.keyinfo.reg));
-                    tr.append($('<td>').html(value.keyinfo.exp));
-                    tr.append($('<td>').html(value.keyinfo.valid));
-                    tr.append($('<td>').html(value.keyinfo.expired));
+                    tr.append($('<td>').html(value.result));
+                    
+                    td = $('<td>');
+                    td.append($('<b>').html(value.firstname + " " + value.lastname));
+                    td.append($('<p>').append($('<i>').html(value.email)));
+                    tr.append(td);
+                    
+                    td = $('<td>');
+                    td.append($('<p>').append($('<b>').html(value.keyinfo.name)));
+                    td.append($('<p>').html(value.keyinfo.email));
+                    td.append($('<p>').html("Reg.Date: " + value.keyinfo.reg + "/ Exp.Date: " + value.keyinfo.exp));
+                    td.append($('<p>').html("Status: " + value.keyinfo.valid + " and " +value.keyinfo.expired));
+                    tr.append(td);
                     $('#verify-content').append(tr);
                     i++;
                 });
@@ -1187,19 +1229,13 @@ function verify_form(){
                 <div class="modal-body" >
                     <fieldset>
                         <legend>This form has already been signed by</legend>
-                            <table class='table'>
+                            <table class='table verification'>
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>First Name</th>
-                                        <th>Last Name</th>
-                                        <th>Email</th>
-                                        <th>Key's username</th>
-                                        <th>Key's mail</th>
-                                        <th>Registration date</th>
-                                        <th>Expiration date</th>
-                                        <th>Valid</th>
-                                        <th>Status</th>
+                                        <th>Result</th>
+                                        <th>User's info</th>
+                                        <th>Key's info</th>
                                     </tr>
                                 </thead>
                                 <tbody id='verify-content'>
@@ -1418,7 +1454,6 @@ function verify_form(){
 <script type="text/javascript">
 $(document).ready(function(){
     $('#form-title').attr('disabled', true);  
-    
 });
 </script>
 <?php } ?>
