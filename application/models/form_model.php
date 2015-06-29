@@ -318,4 +318,38 @@ class Form_model extends CI_Model {
         return null;
     }
 
+    function sign($form_id, $signed_data){
+        $em = $this->doctrine->em;
+
+        $user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
+        $form = $em->getRepository('Entities\Form')->findOneBy(array('id' => $form_id));
+        $sign = $em->getRepository('Entities\Sign')->findOneBy(array('user'=>$user,'form'=>$form));
+        if ($sign == null)
+            $sign = new Entities\Sign();
+        $sign->setForm($form);
+        $sign->setUser($user);
+        $sign->setData($signed_data);
+
+        $em->persist($sign);
+        $em->flush();
+
+        return $sign;
+    }
+
+    function check_signed($form_id){
+        $em = $this->doctrine->em;
+
+        $user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
+        $form = $em->getRepository('Entities\Form')->findOneBy(array('id' => $form_id));
+        $sign = $em->getRepository('Entities\Sign')->findOneBy(array('user'=>$user,'form'=>$form));
+        return ($sign != null);
+    }
+
+    function get_all_signature($form_id){
+        $em = $this->doctrine->em;
+        $form = $em->getRepository('Entities\Form')->findOneBy(array('id' => $form_id));
+        $sign = $em->getRepository('Entities\Sign')->findBy(array('form'=>$form));
+        return $sign;
+    }
+
 }

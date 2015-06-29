@@ -88,7 +88,6 @@ class Formmaker {
 				$this->CI =& get_instance();
 				if ($owner == true){
 					$_json ['fields'] [$j] ['owner'] = $this->CI->session->userdata ( 'identity' );
-					echo "ok";
 				}
 				$_json ['fields'] [$j] ['filled_by'] = $this->CI->session->userdata ( 'identity' );
 

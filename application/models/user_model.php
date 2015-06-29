@@ -62,9 +62,12 @@ class User_model extends CI_Model{
 	/*
 	Load the pair key information of the current user
 	*/
-	function load_user_pair_key(){
+	function load_user_pair_key($user_id = null){
 		$em = $this->doctrine->em;
-        $user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
+		if ($user_id != null)
+			$user = $em->find('Entities\User',$user_id);
+		else
+        	$user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
 		$cert = $em->getRepository('Entities\Certificate')->findOneByUser($user);
 		return $cert;
 	}

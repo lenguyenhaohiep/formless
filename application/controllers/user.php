@@ -98,12 +98,24 @@ class User extends Base_controller{
 			$sscert = openssl_csr_sign($csr, null, $privkey, $numberofdays);
 			openssl_x509_export($sscert, $publickey);
 			openssl_pkey_export($privkey, $privatekey, $privkeypass);
-			openssl_csr_export($csr, $csrStr);
+			//openssl_csr_export($csr, $csrStr);
+
+			$publickey=openssl_pkey_get_public($publickey);
 			
 			$cert = $this->user_model->create_or_update_key($publickey, $privatekey);
 
 			$data = array ('pri'=> $privatekey, 'pub' => $publickey);  // Will hold the exported PubKey
 			echo json_encode($data);
+
+
+			$dn = array();  // use defaults
+			$res_privkey = openssl_pkey_new();
+			$res_csr = openssl_csr_new($dn, $res_privkey);
+			$res_cert = openssl_csr_sign($res_csr, null, $res_privkey, $ndays);
+
+			openssl_x509_export($res_cert, $str_cert);
+
+			$res_pubkey = openssl_pkey_get_public($str_cert);
 
 	}
 
@@ -119,5 +131,44 @@ class User extends Base_controller{
 		$this->load->model('user_model');
 		$cert = $this->user_model->load_user_pair_key();
 		echo ($cert==null) ? "" : $cert->getPubicKey();
+	}
+
+	function loadkeyinfo(){
+		$this->load->model('user_model');
+		$cert = $this->user_model->load_user_pair_key();
+		$this->load->library('securitygpg');
+		$data = $this->securitygpg->get_information($cert->getSecretKey());
+		echo json_encode($data);
+		//echo $cert->getSecretKey();
+	}
+
+	function test3(){
+		$config = array(
+		    "digest_alg" => "sha1",
+		    "private_key_bits" => 1024,
+		    "private_key_type" => OPENSSL_KEYTYPE_RSA,
+		);
+   
+		// Create the private and public key
+		$res = openssl_pkey_new($config);
+
+		// Extract the private key from $res to $privKey
+		openssl_pkey_export($res, $privKey);
+
+		// Extract the public key from $res to $pubKey
+		$pubKey = openssl_pkey_get_details($res);
+		$pubKey = $pubKey["key"];
+
+		$data = 'plaintext data goes here';
+
+		// Encrypt the data to $encrypted using the public key
+		openssl_public_encrypt($data, $encrypted, $pubKey);
+
+		// Decrypt the data using the private key and store the results in $decrypted
+		openssl_private_decrypt($encrypted, $decrypted, $privKey);
+
+	
+		$this->load->library('securitygpg');
+		$data = $this->securitygpg->get_information($privKey);
 	}
 }

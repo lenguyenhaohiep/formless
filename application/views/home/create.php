@@ -655,6 +655,7 @@ function sign(id,id1,id2){
     if (msg === ''){   
          //Sign Process
         load_keys("<?php echo base_url()?>index.php/user/loadkey"); 
+        load_keys_info("<?php echo base_url()?>index.php/user/loadkeyinfo"); 
         $('#sign-form').modal();
     	}
     else
@@ -863,6 +864,7 @@ function save_key(){
                 success:function(data){
                     if (data != ''){
                         $('#btn-sign').attr('disabled',false);
+                        load_keys_info("<?php echo base_url()?>index.php/user/loadkeyinfo"); 
                     }
                 }
             });
@@ -870,15 +872,28 @@ function save_key(){
 }
 
 function sign_form(){
-    save_form(2);
-    $.ajax({
-        type: "post",
-        url: '<?php echo base_url()?>index.php/form/sign',
-        data: {form_id: $('#form-id').val()},
-        success: function(data){
-            alert(data);
-        }
-    });
+    $('#confirm-modal').modal('hide');
+    if ($('#passphrase-sign').val() == ""){
+        display_msg("Warning", "Passphrase has to be provided, please enter one");
+        return;
+    }else{
+        save_form(2);
+        $.ajax({
+            type: "post",
+            url: '<?php echo base_url()?>index.php/form/sign',
+            data: {form_id: $('#form-id').val(), 'passphrase': $('#passphrase-sign').val()},
+            success: function(data){
+                  if (data != ''){
+                       display_msg('info', 'Saved succesfully');
+                    $('#sign-form').modal('hide');
+                  }
+                  else{
+                        display_msg('Warning', 'Saved unsuccesfully, please retry');
+
+                  }
+            }
+        });
+    }
 }
 
 function gen_key(){
@@ -894,11 +909,40 @@ function gen_key(){
                 $('#btn-sign').attr('disabled',false);
                 $('#priv2').val(data.pri);
                 $('#pub2').val(data.pub);
+                load_keys_info("<?php echo base_url()?>index.php/user/loadkeyinfo"); 
             }
         });
     }
 }
 
+function verify_form(){
+    $('#verify-content').empty();
+    $('#form-verification').modal();
+    $.ajax({
+        type: 'post',
+            url: '<?php echo base_url()?>index.php/form/verify',
+            dataType: 'json',
+            data: {form_id: $('#form-id').val()},
+            success:function(data){
+                var i=1;
+                $.each(data, function(key,value){
+                    tr = $('<tr>');
+                    tr.append($('<td>').html(i));
+                    tr.append($('<td>').html(value.firstname));
+                    tr.append($('<td>').html(value.lastname));
+                    tr.append($('<td>').html(value.email));
+                    tr.append($('<td>').html(value.keyinfo.name));
+                    tr.append($('<td>').html(value.keyinfo.email));
+                    tr.append($('<td>').html(value.keyinfo.reg));
+                    tr.append($('<td>').html(value.keyinfo.exp));
+                    tr.append($('<td>').html(value.keyinfo.valid));
+                    tr.append($('<td>').html(value.keyinfo.expired));
+                    $('#verify-content').append(tr);
+                    i++;
+                });
+            }
+    });
+}
 </script>
 
 <div id="page-wrapper" style="min-height: 275px;">
@@ -916,15 +960,51 @@ function gen_key(){
                     <div class="modal-body" id='form-message-content'>
                         <div id='msg-key' style= "display:none">
                         </div>
-                        <div id='key-management'>
+                        <div id='current-key-info' style="display:none">
+                            <fieldset>
+                                <legend>Your keys' information</legend>
+                                <table>
+                                    <tr>
+                                        <td style='width:200px'>Owner's Name</td>
+                                        <td><b id='o-name'></b></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Owner's Email</td>
+                                        <td><b id='o-email'></b></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Registration date</td>
+                                        <td><b id='o-reg'></b></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Expiration date</td>
+                                        <td><b id='o-exp'></b></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Key validation</td>
+                                        <td><b id='o-valid'></b></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Status</td>
+                                        <td><b id='o-expired'></b></td>
+                                    </tr>
+                                </table>
+                            </fieldset>
+                            <div id='passphrase-entrance'>
+                                <legend>Passphrase to sign</legend>
+                                <input style="width:100%" type='password' id='passphrase-sign' placeholder='Please enter your passphrase to sign this form'>
+                            </div>
+                        </div>
+
+                        <div id='key-management' style="display:none"> 
                             <div id='sign-method'>
                                 <fieldset>
                                     <legend>Key Management</legend>
                                     <input type='radio' name='signature' id='signature' value='1' onclick='$("#gen-cert").css("display","none"); $("#upload-cert").css("display","block");' checked/> Use your valid certificate 
-                                    <input type='radio' name='signature' id='signature' value='2' onclick='$("#upload-cert").css("display","none"); $("#gen-cert").css("display","block");'/> Use the certificate of this site
+                                    <input type='radio' name='signature' id='signature' value='2' onclick='$("#upload-cert").css("display","none"); $("#gen-cert").css("display","block");' disabled/> Use the certificate of this site
                                 </fieldset>
                             </div>
-                            <div id='upload-cert' style="display:true">
+                            <div id='upload-cert' style="display:block">
                                 <form id='m-1'>
                                     <fieldset>
                                         <legend>Key's info</legend>
@@ -966,7 +1046,7 @@ function gen_key(){
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-primary" id='btn-sign' onclick="sign_form()">Sign</button>
+                        <button class="btn btn-primary" id='btn-sign' onclick='display_confirm("Warning","Do you want to sign, once this form is signed, it cannot be edited", "sign_form()")'>Sign</button>
                         <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
                     </div>
                 </div>
@@ -1095,7 +1175,47 @@ function gen_key(){
                 </div>
                 <!-- /.modal-dialog -->
             </div>
-        
+    <div class="modal" id="form-verification" tabindex="-1" role="dialog"
+        aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog form-review">
+                    <div class="modal-content">
+                        <div class="modal-header control">
+                    <button type="button" class="close" data-dismiss="modal"
+                        aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Verification</h4>
+                </div>
+                <div class="modal-body" >
+                    <fieldset>
+                        <legend>This form has already been signed by</legend>
+                            <table class='table'>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>First Name</th>
+                                        <th>Last Name</th>
+                                        <th>Email</th>
+                                        <th>Key's username</th>
+                                        <th>Key's mail</th>
+                                        <th>Registration date</th>
+                                        <th>Expiration date</th>
+                                        <th>Valid</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id='verify-content'>
+                                </tbody>
+                            </table>
+                        </legend>
+                    </fieldset>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>      
         
 	<div class="modal" id="myModal" tabindex="-1" role="dialog"
 		aria-labelledby="myModalLabel" aria-hidden="true">
@@ -1160,7 +1280,7 @@ function gen_key(){
                 <button id="btn-browse" class="btn btn-primary" type="button" onclick="$('#browse-file').click();" data-toggle="tooltip" data-placement="bottom" data-original-title="Browse and view a form from your computer">Browse</button>
                 <input id='browse-file' accept="text/plain" type='file' onchange='display_file()' style="display:none"/>
                 <button id='btn-export' class="btn btn-primary" type="button" onclick="export_pdf()" data-toggle="tooltip" data-placement="bottom" data-original-title="Export form to PDF (*.pdf) format">Export PDF</button>
-
+                <button id='btn-verify' class='btn btn-danger' type='button' onclick='verify_form()' data-toggle="tooltip" data-placement="bottom" data-original-title="Verify this form to ensure the origination">Verify</button>
 			</div>
 		</div>
 

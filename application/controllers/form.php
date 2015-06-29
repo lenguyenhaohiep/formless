@@ -14,6 +14,10 @@ class Form extends Base_controller {
 		$this->load_base ();
 		$this->load->library ( 'formmaker' );
 	}
+
+	function test(){
+		echo "hiep";
+	}
 	function get_template($type_id = NULL) {
 		$this->load->library ( 'formmaker' );
 		
@@ -47,17 +51,24 @@ class Form extends Base_controller {
 
 
 			if ($form != null) {
-				if ($own)
-					echo $this->formmaker->generate_from_json ( $form->getData () );
-				else{
-					$share_form = $this->form_model->get_shared_attrs_by_id ($form_id);
-					if ($share_form == NULL)
+				$signed = $this->form_model->check_signed($form_id);
+					if ($signed == true){
 						$ediableFields = array();
-					else
-						$ediableFields = json_decode($share_form->getAttrs(),true);
-						
+						echo $this->formmaker->generate_from_json ( $form->getData (), $ediableFields);
+					}
+					else {
+						if ($own)
+							echo $this->formmaker->generate_from_json ( $form->getData () );
+						else{
+							$share_form = $this->form_model->get_shared_attrs_by_id ($form_id);
+							if ($share_form == NULL)
+								$ediableFields = array();
+							else
+								$ediableFields = json_decode($share_form->getAttrs(),true);
+								
 
-					echo $this->formmaker->generate_from_json ( $form->getData (), $ediableFields);
+							echo $this->formmaker->generate_from_json ( $form->getData (), $ediableFields);
+							}
 					}
 			}
 		}
@@ -81,7 +92,8 @@ class Form extends Base_controller {
 
 					$restrictedFields = array();
 					foreach ($fullFields  as $e) {
-						$field = array_keys($e)[0];
+						$field = (array_keys($e));
+						$field = $field[0];
 						if (in_array($field, $ediableFields))
 							$restrictedFields[] = $e;
 					}
@@ -170,7 +182,8 @@ class Form extends Base_controller {
 			$lstAttrs = $this->formmaker->get_attribute_from_json ($data ['template_json']);
 			$data ['ediableFields'] = array();
 			foreach ($lstAttrs as $a) {
-				$data ['ediableFields'][] = array_keys($a)[0];
+				$keys = array_keys($a);
+				$data ['ediableFields'][] = $keys[0];
 			}
 
 		}
@@ -181,8 +194,10 @@ class Form extends Base_controller {
 			if ($data['own'] == true){
 				$lstAttrs = $this->formmaker->get_attribute_from_json ($data ['template_json']);
 				$data ['ediableFields'] = array();
-				foreach ($lstAttrs as $a)
-					$data ['ediableFields'][] = array_keys($a)[0];
+				foreach ($lstAttrs as $a){
+					$keys = array_keys($a);
+					$data ['ediableFields'][] = $keys[0];
+				}
 			}else 
 				if ($share_form == NULL)
 					$data ['ediableFields'] = array();
@@ -194,6 +209,15 @@ class Form extends Base_controller {
 
 		if ($data ['attrs'] != "")
 			$data ['attrs'] = $this->formmaker->get_attributes_from_requested_json($data['attrs']);
+
+		// check if you've already signed
+		if ($data ['form_id'] != ''){
+			$signed = $this->form_model->check_signed($form_id);
+			if ($signed == true){
+				$data ['own'] = false; 
+				$data ['ediableFields'] = array();
+			}
+		}
 
 		// no update for form
 		if ($data ['data'] == "" || $data ['data'] == "-1") {
@@ -478,17 +502,92 @@ class Form extends Base_controller {
 		}
 	}
 
-	function sign(){
+	function sign($form_id = NULL){
 		$this->load->model('form_model');			
 		$this->load->model('user_model');
+		$form_id = $this->input->post ( 'form_id' );
 
-		$form_id = $this->input->post('form_id');
 		if ($form_id != NULL){
 			$form = $this->form_model->get_form ($form_id);
 			$cert = $this->user_model->load_user_pair_key();
-			echo 'sign';
-			return;
+	
+			$pri = $cert->getSecretKey();
+			$pub = $cert->getPubicKey();
+			$passphrase = $this->input->post('passphrase-sign');
+
+			$message = $form->getData();
+			$passphrase = "hieple";
+			$this->load->library('securitygpg');
+
+			$signed_message = $this->securitygpg->sign($message, $pri, $passphrase);
+
+			$this->load->model('form_model');
+			$sign = $this->form_model->sign($form_id, $signed_message);
+
+			echo $sign->getId();
 		}
-		echo '';
+		else{
+			echo "";
+		}
+
+	}
+
+	function test2(){
+		$this->load->model('user_model');
+
+		$cert = $this->user_model->load_user_pair_key();
+
+		$PublicData = $cert->getPubicKey();
+		$PrivateData = $cert->getSecretKey();
+
+		$message = "this is the messge";
+		$passphrase = "hieple";
+		$this->load->library('securitygpg');
+
+		$signed_message = $this->securitygpg->sign($message, $PrivateData, $passphrase);
+
+		echo $signed_message;
+
+		//echo "<br/>";
+
+		$verify = $this->securitygpg->verify($signed_message, $PublicData);
+		print_r($verify);
+	}
+
+	function verify($form_id = NULL){
+		$this->load->model('user_model');
+		$this->load->library('securitygpg');
+		$form_id = $this->input->post('form_id');
+		$signatures = $this->form_model->get_all_signature($form_id);
+		$history = array();
+		foreach ($signatures as $s){
+			$user_id = $s->getUser()->getId();
+			$signed_message = $s->getData();
+			$cert = $this->user_model->load_user_pair_key($user_id);
+			$PublicData = $cert->getPubicKey();
+			$verify = $this->securitygpg->verify($signed_message, $PublicData);
+			$history[] = array(
+				"firstname" => $s->getUser()->getFirstName(),
+				"lastname" 	=> $s->getUser()->getLastName(),
+				"email"		=> $s->getUser()->getEmail(),
+				"keyinfo"	=> $this->securitygpg->get_by_fingerprint($verify[0]['subkeys'][0]['fingerprint'])
+
+			);
+		}
+
+		echo json_encode($history);
+	}
+
+	function keyinfo(){
+		$this->load->model('user_model');
+		$this->load->library('securitygpg');
+
+		$cert = $this->user_model->load_user_pair_key();
+		$PublicData = $cert->getPubicKey();
+		$PrivateData = $cert->getSecretKey();
+
+		print_r($this->securitygpg->get_information($PrivateData));
+		print_r($this->securitygpg->get_information($PublicData));
+
 	}
 }

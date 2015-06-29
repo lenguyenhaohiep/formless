@@ -30,6 +30,8 @@
         var msg = 'Your key has been saved in our system. If you would like to use it, click <a href="#" onclick="hide_key_management()">here</a> !!!';
         $('#msg-key').html(msg);
         $('#btn-sign').attr('disabled',true);
+        $('#current-key-info').css('display','none');
+
     }
 
     function hide_key_management(){
@@ -38,8 +40,9 @@
         var msg = 'Your key has been saved in our system. If you would like to modify, click <a href="#" onclick="dislay_key_management()">here</a> !!!';
         $('#msg-key').html(msg);
         $('#btn-sign').attr('disabled',false);
-
+        $('#current-key-info').css('display','block');
     }
+
 
     // This part is used for the cryptography feature
     function load_keys(url){
@@ -50,7 +53,6 @@
                 if (data == ''){
                     dislay_key_management();
                     $('#msg-key').css('display','none');
-
                 }
                 else{
                     hide_key_management();
@@ -58,6 +60,28 @@
             }
         });
     } 
+
+    function load_keys_info(url){
+        $.ajax({
+            type: "get",
+            url: url,
+            dataType: "json",
+            success: function(data){
+                if (data != ''){
+                    $('#o-name').text(data.name);
+                    $('#o-email').text(data.email);
+                    $('#o-reg').text(data.reg);
+                    $('#o-exp').text(data.exp);
+                    $('#o-valid').text(data.valid);
+                    $('#o-expired').text(data.expired);
+                    hide_key_management();
+                }
+                else{         
+                    dislay_key_management();          
+                }
+            }
+        });
+    }
 
     function upload_key(input, id){
         var file = input.files[0];
