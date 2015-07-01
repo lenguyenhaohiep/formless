@@ -1,5 +1,7 @@
 <?php
+require __DIR__ . '/../../vendor/autoload.php';
 use Doctrine\DBAL\Logging\EchoSQLLogger;
+use mikehaertl\wkhtmlto\Pdf;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -210,7 +212,7 @@ class Form extends Base_controller {
 		// check if you've already signed, when signed, from cannot be edited, 
 		// ediableFields = array() means that you have no attribute in form to update
 		if ($data ['form_id'] != ''){
-			$signed = $this->form_model->check_signed($form_id);
+			$signed = $this->form_model->check_signed($data ['form_id']);
 			if ($signed == true){
 				$data ['own'] = false; 
 				$data ['ediableFields'] = array();
@@ -447,8 +449,11 @@ class Form extends Base_controller {
 
 	function convertpdf(){
 		$data = $this->get_request_data();
-		$text = json_encode ($data ['form_filled'], JSON_PRETTY_PRINT);
+		$text = $data ['form_filled'];
+
 		$path = $data['title'] != "" ? sanitize_file_name($data['title']) : 'untitled';
+
+		echo $this->formmaker->generate_html_pdf($text);
 	}
 
 	function sanitize_file_name($str = '') {
@@ -522,7 +527,6 @@ class Form extends Base_controller {
 			$passphrase = $this->input->post('passphrase-sign');
 
 			$message = $form->getData();
-			$passphrase = "hieple";
 			$this->load->library('securitygpg');
 
 			$signed_message = $this->securitygpg->sign($message, $pri, $passphrase);
@@ -550,7 +554,8 @@ class Form extends Base_controller {
 			$signed_message = $s->getData();
 			$cert = $this->user_model->load_user_pair_key($user_id);
 			$PublicData = $cert->getPubicKey();
-			$verify = $this->securitygpg->verify($signed_message, $PublicData, $keyinfo = "");
+			$keyinfo="";
+			$verify = $this->securitygpg->verify($signed_message, $PublicData, $keyinfo);
 			$history[] = array(
 				"firstname" => $s->getUser()->getFirstName(),
 				"lastname" 	=> $s->getUser()->getLastName(),
@@ -574,5 +579,47 @@ class Form extends Base_controller {
 		}
 		
 		echo "0";
+	}
+
+	function test(){
+		try{		
+			$options = array(
+				'use-xserver',
+				'commandOptions' => array('enableXvfb' => true),
+				'disable-smart-shrinking',
+				'user-style-sheet' => __DIR__ .'/../../css/pdf.css',
+				"binary" => "/usr/bin/wkhtmltopdf");
+			// You can pass a filename, a HTML string or an URL to the constructor
+			$pdf = new Pdf($options);
+			//echo $url = base_url()."index.php/form/get_data/1";
+			$url = '<!DOCTYPE html>
+				<html>
+				<head>
+				</head>
+				<body>
+
+				    <div id="print-area">
+				        <div id="header">
+				            This is an example header.
+				        </div>
+				        <div id="content"><h1><center>Header of form</center></h1><h4>Personal information</h4><p><span>First Name</span><span>Hiep</span></p><p><span>Last Name</span><span>Le</span></p><p><span>Date of birth</span><span>07/03/1990</span></p><p><span>Sex</span><span><input type="radio" checked>Male<br/><input type="radio" >Female<br/></span></p><p><span>Languages</span><span><input type="checkbox" checked>English<br/><input type="checkbox" checked>French<br/></span></p><h4>Job information</h4><p><span>Begining Date</span><span>06/03/1990</span></p><p><span>Salary</span><span>11111</span></p><p><span>Email</span><span>lenguyenhaohiep@gmail.com</span></p><p><span>Signature</span><span>Hiep Le</span></p><h4>Attachments</h4><p><span>Documents</span><span>0 attachment(s)</span></p></div>
+				        <div id="footer">
+				            This is an example footer.
+				        </div>
+				    </div>
+
+				</body>
+				</html>';
+			$pdf->addPage($url);
+
+			// On some systems you may have to set the binary path.
+			// $pdf->binary = 'C:\...';
+			
+			$pdf->send();
+
+		}catch(Exception $e){
+			echo $pdf->getError();
+
+		}
 	}
 }

@@ -58,9 +58,8 @@ class Formmaker {
 		return $values;		
 	}
 	
-	//fill data to template
-	function fill_data($json, $data, $owner, $attrs) {
 
+	function data_request_to_array($data){
 		//get array data from request, each field is a pair (name, value)
 		$_data = array ();
 		foreach ( $data as $d ) {
@@ -76,6 +75,14 @@ class Formmaker {
 				$_data [$name] = $d ["value"];
 			}
 		}
+
+		return $_data;
+	}
+
+	//fill data to template
+	function fill_data($json, $data, $owner, $attrs) {
+		$_data = $this->data_request_to_array($data);
+		
 		//fill data to the template, template will be converted from json to array		
 		$_json = json_decode ( $json, true );
 		$j = 0;
@@ -169,70 +176,150 @@ class Formmaker {
 		}
 		return $result;
 	}
-	function generate_from_json($json, $attrs = NULL) {
+
+
+function generate_from_json($json, $attrs = NULL) {
+	$template = json_decode ( $json, true );
+	$template = $template['fields'];
+	if (count ( $template ) > 0) {
+	foreach ( $template as $component ) {
+		$type = $component ['field_type'];
+		//check if field is authorized
+		if (!isset($attrs))
+			$disable = '';
+		else{
+			if (!in_array($component['cid'],$attrs)){
+				$disable = ' disabled';
+			}
+			else
+				$disable = '';
+			}
+			switch ($type) {
+				case 'header' :
+					$this->html_template .= $this->generate_header ( $component,$disable );
+					break;
+			case 'text' :
+				$this->html_template .= $this->generate_text ( $component,$disable );
+				break;
+			case 'paragraph' :
+				$this->html_template .= $this->generate_paragraph ( $component,$disable );
+				break;
+			case 'checkboxes' :
+				$this->html_template .= $this->generate_checkboxes ( $component,$disable );
+				break;
+			case 'radio' :
+				$this->html_template .= $this->generate_radio ( $component,$disable );
+				break;
+			case 'date' :
+				$this->html_template .= $this->generate_date ( $component,$disable );
+				break;
+			case 'dropdown' :
+				$this->html_template .= $this->generate_dropdown ( $component,$disable );
+				break;
+			case 'number' :
+				$this->html_template .= $this->generate_number ( $component,$disable );
+				break;
+			case 'email' :
+				$this->html_template .= $this->generate_email ( $component,$disable );
+				break;
+			case 'file' :
+				$this->html_template .= $this->generate_file ( $component,$disable );
+				break;
+			case 'sign' :
+				$this->html_template .= $this->generate_sign ( $component,$disable );
+				break;
+			case 'section' :
+				$this->html_template .= $this->generate_section ( $component,$disable );
+				break;
+			default :
+				break;
+			}
+		}
+	} else {
+		$this->html_template = 'No template available';
+	}
+	return $this->html_template . "</table><input type='submit' id='validate' style='display:none'/></form>";
+}
+
+	function generate_html_pdf($json) {
 		$template = json_decode ( $json, true );
 		$template = $template['fields'];
+		$html = '<!DOCTYPE html>
+				<html>
+				<head>
+				</head>
+				<body>
+
+				    <div id="print-area">
+				        <div id="header">
+				            This is an example header.
+				        </div>
+				        <div id="content">';
 		if (count ( $template ) > 0) {
 			foreach ( $template as $component ) {
 				$type = $component ['field_type'];
-
-
-				//check if field is authorized
-				if (!isset($attrs))
-					$disable = '';
-				else{
-					if (!in_array($component['cid'],$attrs)){
-						$disable = ' disabled';
-					}
-					else
-						$disable = '';	
-				}
 				switch ($type) {
 					case 'header' :
-						$this->html_template .= $this->generate_header ( $component,$disable );
+						$html .= "<h1><center>".$component['label']."</center></h1>";
 						break;
 					case 'text' :
-						$this->html_template .= $this->generate_text ( $component,$disable );
-						break;
 					case 'paragraph' :
-						$this->html_template .= $this->generate_paragraph ( $component,$disable );
-						break;
-					case 'checkboxes' :
-						$this->html_template .= $this->generate_checkboxes ( $component,$disable );
-						break;
-					case 'radio' :
-						$this->html_template .= $this->generate_radio ( $component,$disable );
-						break;
 					case 'date' :
-						$this->html_template .= $this->generate_date ( $component,$disable );
-						break;
-					case 'dropdown' :
-						$this->html_template .= $this->generate_dropdown ( $component,$disable );
-						break;
 					case 'number' :
-						$this->html_template .= $this->generate_number ( $component,$disable );
-						break;
 					case 'email' :
-						$this->html_template .= $this->generate_email ( $component,$disable );
+					case 'dropdown' :
+						$html .= "<p><span>".$component['label']."</span><span>".$component['value']."</span></p>";
 						break;
+
+					case 'checkboxes' :
+					case 'radio' :
+						$type = str_replace("es", "", $type);
+						$options = $component ['field_options'] ['options'];
+						$html .= "<p><span>".$component['label']."</span><span>";
+						if (isset ( $component ['value'] )){
+							$value = $component ['value'];
+							if (!is_array($value))
+								$value = array($value);
+							}
+							else
+								$value = array ();
+						foreach ( $options as $opt ) {
+							$val = $opt ['label'];
+							if (in_array ( $val, $value ))
+								$check = 'checked';
+							else
+								$check = '';
+							
+							$html .= "<input type='$type' $check>$val<br/>";
+						}
+						$html .= "</span></p>";
+						break;
+
 					case 'file' :
-						$this->html_template .= $this->generate_file ( $component,$disable );
+						$html .= "<p><span>".$component['label']."</span><span>".count($component['value'])." attachment(s)</span></p>";
 						break;
 					case 'sign' :
-						$this->html_template .= $this->generate_sign ( $component,$disable );
+						$html .= "<p><span>".$component['label']."</span><span>".$component['value'][0]." ". $component['value'][1]."</span></p>";
+						if ($component['value'][2] != '')
+							$html .= "<p><img src='".$component['value'][2]."'/></p>";
 						break;
 					case 'section' :
-						$this->html_template .= $this->generate_section ( $component,$disable );
+						$html .= "<h4>".$component['label']."</h4>";
 						break;
 					default :
 						break;
 				}
 			}
-		} else {
-			$this->html_template = 'No template available';
-		}
+		} 
 		
-		return $this->html_template . "</table><input type='submit' id='validate' style='display:none'/></form>";
+		return $html.'</div>
+				        <div id="footer">
+				            This is an example footer.
+				        </div>
+				    </div>
+
+				</body>
+				</html>';
 	}
 	function check_require($true) {
 		if ($true == true)

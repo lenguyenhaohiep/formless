@@ -6,7 +6,7 @@ class Securitygpg{
 
 	}
 
-	function verify($signed_message, $public_key, $keyinfo){
+	function verify($signed_message, $public_key, &$keyinfo){
 		$plaintext = "";
 		$gnupg = new gnupg();
 		$gnupg->seterrormode(gnupg::ERROR_EXCEPTION);

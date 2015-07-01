@@ -69,8 +69,12 @@ class User extends Base_controller{
 	function loadkeyinfo(){
 		$this->load->model('user_model');
 		$cert = $this->user_model->load_user_pair_key();
+		if ($cert == null){
+			echo json_encode(array());
+			return;
+		}
 		$this->load->library('securitygpg');
-		$data = $this->securitygpg->get_information($cert->getSecretKey());
+		$data = $this->securitygpg->get_information($cert->getPubicKey());
 		echo json_encode($data);
 		//echo $cert->getSecretKey();
 	}

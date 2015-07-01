@@ -432,6 +432,28 @@ function download_form(){
 	//window.location.href= "<?php echo base_url()?>index.php/form/download/"+$('#form-id').val();
 }
 
+function export_pdf(){
+    if ($('#cmb-type-id').val() == '')
+        display_msg('Warning', 'Cannot download, form is not identifiable');
+    else{
+        var form_data = $('#data-form').serializeArray();
+
+
+        $.ajax({
+            type:"POST",
+            url: "<?php echo base_url()?>index.php/form/convertpdf/",
+            data: {
+                form_id: $('#form-id').val(), 
+                data_form: form_data},
+            success: function(data){
+            }
+
+        });
+    }
+
+    //window.location.href= "<?php echo base_url()?>index.php/form/download/"+$('#form-id').val();
+}
+
 function clear_form(){
     $('#confirm-modal').modal('hide');
 	$('#form-id').val("");
@@ -1047,7 +1069,7 @@ function verify_form(){
                                 </fieldset>
                             </div>
                             <div id='upload-cert' style="display:block">
-                                <form id='m-1'>
+                                <form id='m-1' onsubmit="return false;">
                                     <fieldset>
                                         <legend>Key's info</legend>
                                         <label>Public key</label>
@@ -1065,7 +1087,7 @@ function verify_form(){
                                 </form>
                             </div>
                             <div id='gen-cert' style= "display:none">
-                                <form id='m-2'>
+                                <form id='m-2' onsubmit="return false;">
                                     <fieldset>
                                         <legend>Key's info</legend>
                                         <label>Passphrase</label>

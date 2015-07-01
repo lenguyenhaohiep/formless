@@ -64,8 +64,9 @@ class User_model extends CI_Model{
 	*/
 	function load_user_pair_key($user_id = null){
 		$em = $this->doctrine->em;
-		if ($user_id != null)
+		if (isset($user_id)){
 			$user = $em->find('Entities\User',$user_id);
+		}
 		else
         	$user = $em->getRepository('Entities\User')->findOneByEmail($this->session->userdata('identity'));
 		$cert = $em->getRepository('Entities\Certificate')->findOneByUser($user);

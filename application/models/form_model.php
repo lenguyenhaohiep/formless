@@ -342,6 +342,8 @@ class Form_model extends CI_Model {
 
         if (isset($signer)){
             $sign = $em->getRepository('Entities\Sign')->findBy(array('form'=>$form));
+            if ($sign == null)
+                return false;
             return count($sign) > 0;
         }
 
