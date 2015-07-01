@@ -81,6 +81,8 @@ $( document ).ready(function() {
             echo "$('#cmb-type-id').prop('disabled',true);";
             echo "$('#form-title').val('" . $form_instance->getTitle () . "');";
             echo "$('#form-id').val('" . $form_instance->getId () . "');";
+            echo "$('#version').val('" . $form_instance->getVersion () . "');";
+
     }
     ?>
     initialize();
@@ -335,15 +337,26 @@ function send_form(){
 	  		  type: "POST",
 	  		  url: "<?php echo base_url() ?>index.php/form/send/",
 	  		  dataType: "json",
-	  		  data: {form_id: $('#form-id').val(), type_id:$('#cmb-type-id').val(), title:$('#form-title').val(), to_user: email_send, message: $('#txt-message').val(),data_form: form_data},
+	  		  data: {form_id: $('#form-id').val(), 
+                  type_id:$('#cmb-type-id').val(), 
+                  title:$('#form-title').val(), 
+                  to_user: email_send, 
+                  version: $('#version').val(),
+                  message: $('#txt-message').val(),
+                  data_form: form_data},
 	  		  success:function(data) {
-	  			$('#form-id').val(data);
-	  			$('#new-message').modal('hide');
-				display_msg('info', 'Sent succesfully, Check inbox for more details');
-				clear_email();
-				clear_form();
-				setTimeout(function(){ window.location.href='<?php echo base_url();?>index.php/home/sent'; }, 2000);
+                    if (isNaN(data.id)){
+                        display_msg('Warning',data.id);
+                    }else{
+                        $('#form-id').val(data.id);
+                        $('#version').val(data.version);
+                        $('#new-message').modal('hide');
+                        display_msg('info', 'Sent succesfully, Check inbox for more details');
+                        clear_email();
+                        clear_form();
+                        setTimeout(function(){ window.location.href='<?php echo base_url();?>index.php/home/sent'; }, 2000);
                     }
+	  	            }
                 });
             }
             else
@@ -391,13 +404,20 @@ function share_form(){
                     type_id:$('#cmb-type-id').val(), 
                     title:$('#form-title').val(), 
                     to_user:$('#email-contact-share').val(),
+                    version: $('#version').val(),
                     data_form: form_data,
                     list_attrs: listAttributes
                 },
 	  		   success:function(data) {
-                    $('#form-id').val(data);
-                    load_shared_info();
-				    display_msg('info', 'Shared succesfully');
+                    if (isNaN(data.id)){
+                        display_msg('Warning',data.id);
+                    }
+                    else{
+                        $('#form-id').val(data.id);
+                        $('#version').val(data.version);
+                        load_shared_info();
+				        display_msg('info', 'Shared succesfully');
+                    }
                 }
             });
         }else
@@ -411,9 +431,22 @@ function download_form(){
     if ($('#cmb-type-id').val() == '')
         display_msg('Warning', 'Cannot download, form is not identifiable');
     else{
+        var form_data = $('#data-form').serializeAll();
+        $('#test-form').empty();
+
+        form = $('<form>',{ action:'<?php echo base_url()?>index.php/form/download/',
+                            method:"POST",
+                            target:"_blank"});
+        form.append($('<input>',{type:'hidden',name: 'form_id',value: $('#form-id').val()}));
+        form.append($('<input>',{type:'submit',id:'pdf-click',name: 'submit',value: "submit"}));
+        form.append($('<input>',{type:'hidden',name: 'title',value: $('#form-title').val()}));
+        form.append($('<input>',{type:'hidden', name: 'type_id',value: $('#cmb-type-id').val()})); 
+        form.append($('<input>',{type: 'hidden', name: 'data_form', value: form_data.toSource()}));
+        $('#test-form').append(form);
+        $('#pdf-click').click();
+
+        return;
         var form_data = $('#data-form').serializeArray();
-
-
         $.ajax({
             type:"POST",
             url: "<?php echo base_url()?>index.php/form/download/",
@@ -432,23 +465,36 @@ function download_form(){
 	//window.location.href= "<?php echo base_url()?>index.php/form/download/"+$('#form-id').val();
 }
 
+
+(function ($) {
+  $.fn.serializeAll = function () {
+    var data = $(this).serializeArray();
+          
+    $(':disabled[name]', this).each(function () { 
+        data.push({ "name": this.name, "value": $(this).val() });
+    });
+      
+    return data;
+  }
+})(jQuery);
+
 function export_pdf(){
     if ($('#cmb-type-id').val() == '')
         display_msg('Warning', 'Cannot download, form is not identifiable');
     else{
-        var form_data = $('#data-form').serializeArray();
+        var form_data = $('#data-form').serializeAll();
+        $('#test-form').empty();
 
-
-        $.ajax({
-            type:"POST",
-            url: "<?php echo base_url()?>index.php/form/convertpdf/",
-            data: {
-                form_id: $('#form-id').val(), 
-                data_form: form_data},
-            success: function(data){
-            }
-
-        });
+        form = $('<form>',{ action:'<?php echo base_url()?>index.php/form/convertpdf/',
+                            method:"POST",
+                            target:"_blank"});
+        form.append($('<input>',{type:'hidden',name: 'form_id',value: $('#form-id').val()}));
+        form.append($('<input>',{type:'submit',id:'pdf-click',name: 'submit',value: "submit"}));
+        form.append($('<input>',{type:'hidden',name: 'title',value: $('#form-title').val()}));
+        form.append($('<input>',{type:'hidden', name: 'type_id',value: $('#cmb-type-id').val()})); 
+        form.append($('<input>',{type: 'hidden', name: 'data_form', value: form_data.toSource()}));
+        $('#test-form').append(form);
+        $('#pdf-click').click();
     }
 
     //window.location.href= "<?php echo base_url()?>index.php/form/download/"+$('#form-id').val();
@@ -515,17 +561,24 @@ function save_form(mode){
 	    	$.ajax({
 	  		  type: "POST",
 	  		  url: "<?php echo base_url()?>index.php/form/save/",
-	  		  dataType: "json",
 	  		  data: {	form_id: $('#form-id').val(), 
 		  		  		type_id:$('#cmb-type-id').val(), 
 		  		  		title:$('#form-title').val(),
+                        version: $('#version').val(),
 		  		  		data_form: form_data},
+              dataType: "json",
 	  		  success:function(data) {
 	  			$('#cmb-type-id').prop('disabled', true);
 		  		  if (data != ''){
-	  			  	$('#form-id').val(data);
-                    if (mode==1)
-	  			  	   display_msg('info', 'Saved succesfully');
+                    if (mode==1){
+                        if (isNaN(data.id))
+                            display_msg('Warning',data.id);
+                        else{
+                            $('#form-id').val(data.id);
+                            $('#version').val(data.version);
+                            display_msg('info', 'Saved succesfully');
+                        }
+                    }
 		  		  }
 	  		  }
 	  	});
@@ -849,6 +902,8 @@ function display_confirm(title, msg, func){
 }
 
 $(document).ready(function(){
+    if ($('#form-id').val() == '')
+        $('#version').val(1);
     if (view == 'detail'){
         $('#btn-clear').css('display','none');
         $('#btn-browse').css('display','none');
@@ -920,6 +975,7 @@ function sign_form(){
             type: "post",
             url: '<?php echo base_url()?>index.php/form/sign',
             data: {form_id: $('#form-id').val(), 'passphrase': $('#passphrase-sign').val()},
+
             success: function(data){
                   if (data != ''){
                         display_msg('info', 'Signed succesfully');
@@ -1008,10 +1064,12 @@ function verify_form(){
     });
 }
 </script>
-
 <div id="page-wrapper" style="min-height: 275px;">
-	<!-- Modal -->
+    <div id='test-form' style='display:none'></div>
 
+	<!-- Modal -->
+    <div id="targetDiv" style='display:none'>
+    </div>
         <div class="modal" id="sign-form" tabindex="-1" role="dialog"
              aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-dialog form-review">
@@ -1367,7 +1425,9 @@ function verify_form(){
                                     </select>
 
 						</div>
-						<input type="hidden" id='form-id' value=''> <input type="text"
+						<input type="hidden" id='form-id' value=''> 
+                        <input type="hidden" id='version' value=''> 
+                        <input type="text"
 							placeholder="Type your document title here..."
 							class="form-control" id="form-title" required> <input
 							type="submit" id='submit-form' style="display: none;">
@@ -1475,7 +1535,8 @@ function verify_form(){
 <?php if ($own == FALSE){?>
 <script type="text/javascript">
 $(document).ready(function(){
-    $('#form-title').attr('disabled', true);  
+    $('#form-title').attr('disabled', true);
+
 });
 </script>
 <?php } ?>

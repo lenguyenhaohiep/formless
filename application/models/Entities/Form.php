@@ -40,6 +40,11 @@ class Form
     private $status;
 
     /**
+     * @var integer $version
+     */
+    private $version = 1;
+
+    /**
      * @var Entities\User
      */
     private $user;
@@ -168,6 +173,28 @@ class Form
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * Set version
+     *
+     * @param integer $version
+     * @return Form
+     */
+    public function setVersion($version)
+    {
+        $this->version = $version;
+        return $this;
+    }
+
+    /**
+     * Get version
+     *
+     * @return integer 
+     */
+    public function getVersion()
+    {
+        return $this->version;
     }
 
     /**

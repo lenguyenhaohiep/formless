@@ -24,7 +24,11 @@ Entities\Form:
       nullable: false
     status:
       type: integer
+      nullable: true    
+    version:
+      type: integer
       nullable: true
+      version: true
   manyToOne:
     user:
       targetEntity: User

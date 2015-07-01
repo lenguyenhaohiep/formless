@@ -1,4 +1,6 @@
 <?php
+use Doctrine\DBAL\LockMode;
+use Doctrine\ORM\OptimisticLockException;
 
 class Form_model extends CI_Model {
 
@@ -21,30 +23,42 @@ class Form_model extends CI_Model {
      * @param unknown $status
      * @param unknown $path_form
      */
-    function create_or_update_form($form_id = NULL, $title, $type_id, $status, $data) {
+    function create_or_update_form($form_id = NULL, $title, $type_id, $status, $data, $expectedVersion = null) {
+        try{
+
         //get type of form
         $type = $this->em->find('Entities\Type', $type_id);
-
         //create new form
         if ($form_id == null) {
             $form = new Entities\Form;
             $form->setCreatedDate(new DateTime());
             $status = 0;
         } else
-            $form = $this->em->find('Entities\Form', $form_id);
-        if (isset($form)) {
-            $form->setType($type);
-            $form->setTitle($title);
-            if ($data != "-1")
-                $form->setData($data);
-            $form->setStatus($status);
+            $form = $this->em->find('Entities\Form', $form_id, LockMode::OPTIMISTIC, (int)$expectedVersion);
+            if (isset($form)) {
+                $form->setType($type);
+                $form->setTitle($title);
+                if ($data != "-1")
+                    $form->setData($data);
+                $form->setStatus($status);
 
-            if ($form->getUser() == NULL)
-                $form->setUser($this->em->find('Entities\User', $this->ion_auth->get_user_id()));
+                if ($form_id == null)
+                    $form->setVersion(1);
+                else
+                    $form->setVersion($expectedVersion+1);
+                $form->setVersion(1);
 
-            $this->em->persist($form);
-            $this->em->flush();
-            return $form;
+                if ($form->getUser() == NULL)
+                    $form->setUser($this->em->find('Entities\User', $this->ion_auth->get_user_id()));
+                //$form->setVersion($expectedVersion+1);
+                $this->em->persist($form);
+                $this->em->flush();
+
+                return $form;
+            }
+        }catch(OptimisticLockException $e) {
+            echo $e->getMessage();
+            return "Sorry, but someone else has already changed this entity. Please apply the changes again!";
         }
     }
 
@@ -72,33 +86,44 @@ class Form_model extends CI_Model {
         }
     }
 
-    function send_form($form_id = NULL, $title, $type_id, $status, $data, $from_user_id, $to_user_id, $message) {
-        $form = $this->create_or_update_form($form_id, $title, $type_id, $status, $data);
+    function send_form($form_id = NULL, $title, $type_id, $status, $data, $version, $from_user_id, $to_user_id, $message) {
+        //$form = $this->create_or_update_form($form_id, $title, $type_id, $status, $data, $version);
+        if ($form_id == null)
+            return null;
 
-        //get from user
-        $from_user = $this->em->find('Entities\User', $from_user_id);
-        //get to users
-        $to_user = $this->em->find('Entities\User', $to_user_id);
+        $form = $this->em->find('Entities\User',$form_id);
+        if ($form != null){
+            //get from user
+            $from_user = $this->em->find('Entities\User', $from_user_id);
+            //get to users
+            $to_user = $this->em->find('Entities\User', $to_user_id);
 
-        $sending = new Entities\Send_history;
-        $sending->setForm($form);
-        $sending->setFromUser($from_user);
-        $sending->setToUser($to_user);
-        $sending->setMessage($message);
-        $sending->setSendDate(new DateTime());
-        $sending->setStatus($status);
+            $sending = new Entities\Send_history;
+            $sending->setForm($form);
+            $sending->setFromUser($from_user);
+            $sending->setToUser($to_user);
+            $sending->setMessage($message);
+            $sending->setSendDate(new DateTime());
+            $sending->setStatus($status);
 
-        $this->em->persist($sending);
-        $result = $this->em->flush();
+            $this->em->persist($sending);
+            $result = $this->em->flush();
 
-        return $sending;
+            return $sending;
+        }   
+        return null;
     }
 
-    function share_form($form_id = NULL, $title, $type_id, $status, $data, $to_user_id, $attr) {
+    function share_form($form_id = NULL, $title, $type_id, $status, $data, $version, $to_user_id, $attr) {
        if ($form_id == NULL)
-            $form = $this->create_or_update_form($form_id, $title, $type_id, $status, $data);
+        return null;
+            //$form = $this->create_or_update_form($form_id, $title, $type_id, $status, $data, $version);
         else
             $form = $this->em->find('Entities\Form', $form_id);
+
+        if ($form == null){
+            return null;
+        }
 
         //get to users
         $to_user = $this->em->find('Entities\User', $to_user_id);

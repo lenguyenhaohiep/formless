@@ -244,15 +244,13 @@ function generate_from_json($json, $attrs = NULL) {
 	function generate_html_pdf($json) {
 		$template = json_decode ( $json, true );
 		$template = $template['fields'];
-		$html = '<!DOCTYPE html>
-				<html>
+		$html = '<html>
 				<head>
 				</head>
 				<body>
 
 				    <div id="print-area">
 				        <div id="header">
-				            This is an example header.
 				        </div>
 				        <div id="content">';
 		if (count ( $template ) > 0) {
@@ -301,7 +299,7 @@ function generate_from_json($json, $attrs = NULL) {
 					case 'sign' :
 						$html .= "<p><span>".$component['label']."</span><span>".$component['value'][0]." ". $component['value'][1]."</span></p>";
 						if ($component['value'][2] != '')
-							$html .= "<p><img src='".$component['value'][2]."'/></p>";
+							$html .= "<p><span></span><img src='".$component['value'][2]."'/></p>";
 						break;
 					case 'section' :
 						$html .= "<h4>".$component['label']."</h4>";
@@ -314,7 +312,6 @@ function generate_from_json($json, $attrs = NULL) {
 		
 		return $html.'</div>
 				        <div id="footer">
-				            This is an example footer.
 				        </div>
 				    </div>
 

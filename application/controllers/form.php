@@ -148,6 +148,7 @@ class Form extends Base_controller {
 		$data ['from_user_id'] = $this->user_model->get_id_from_email ( $this->session->userdata ( 'identity' ) );
 		$data ['data'] = $this->input->post ( 'data_form' );
 		$data ['attrs'] = $this->input->post ( 'list_attrs');
+		$data ['version'] = $this->input->post ('version');
 		
 
 		// get template from type
@@ -232,7 +233,7 @@ class Form extends Base_controller {
 	function save() {
 		$data = $this->get_request_data ();
 		// update or create new on
-		$form = $this->form_model->create_or_update_form ( $data ['form_id'], $data ['title'], $data ['type_id'], $status = 0, $data ['form_filled'] );
+		$form = $this->form_model->create_or_update_form ( $data ['form_id'], $data ['title'], $data ['type_id'], $status = 0, $data ['form_filled'], $data['version'] );
 		
 		$detect_modify = $this->form_model->check_own_form ( $data ['form_id'] );
 		
@@ -243,27 +244,53 @@ class Form extends Base_controller {
 			$user_id = $this->user_model->get_id_from_email ( $this->session->userdata ( 'identity' ) );
 			$this->form_model->modify_form ( $data ['form_id'], $user_id );
 		}
-		echo $form->getId ();
+		if (is_object($form))
+			echo json_encode(array('id'=>$form->getId(),'version'=>$form->getVersion()));
+		else
+			echo json_encode(array('id'=>$form));
 	}
 	function send() {
 		$data = $this->get_request_data ();
-		
+		$form = $this->form_model->create_or_update_form ( $data ['form_id'], $data ['title'], $data ['type_id'], $status = 0, $data ['form_filled'], $data['version'] );
+		if ($form == null){
+			return;
+			echo json_encode(array('id'=>'Cannot send'));
+
+		}
+		$id = $form->getId();
+		$version = $form->getVersion();
+
 		$list_emails = explode ( ",", $data ['to_email'] );
 		foreach ( $list_emails as $email ) {
+
 			$email = $this->process_email ( trim ( $email ) );
-			
+
 			$to_user_id = $this->user_model->get_id_from_email ( trim ( $email ) );
-			
-			$send = $this->form_model->send_form ( $data ['form_id'], $data ['title'], $data ['type_id'], $status = 1, $data ['form_filled'], $data ['from_user_id'], $to_user_id, $data ['message'] );
-			
-			echo $send->getId ();
+			if ($form != null){
+				$send = $this->form_model->send_form ( $id, $data ['title'], $data ['type_id'], $status = 1, $data ['form_filled'], $version, $data ['from_user_id'], $to_user_id, $data ['message'] );
+			}
+		}
+
+		if ($id != ''){
+			echo json_encode(array('id'=>$id,'version'=>$version));
+		}
+		else{
+			echo json_encode(array('id'=>$form));
 		}
 	}
 	function share() {
 		$data = $this->get_request_data ();
-		
+		$form = $this->form_model->create_or_update_form ( $data ['form_id'], $data ['title'], $data ['type_id'], $status = 0, $data ['form_filled'], $data['version'] );
+		if ($form == null){
+			return;
+			echo json_encode(array('id'=>'Cannot share'));
+
+		}
+		$id = $form->getId();
+		$version = $form->getVersion();
+
 		if ($data ['to_email'] == '') {
-			$share = $this->form_model->share_form ( $data ['form_id'], $data ['title'], $data ['type_id'], $status = 1, $data ['form_filled'], null, $data['attrs']);
+			$share = $this->form_model->share_form ( $data ['form_id'], $data ['title'], $data ['type_id'], $status = 1, $data ['form_filled'], $data['version'], null, $data['attrs']);
 			echo $share->getForm()->getId ();
 		} else {
 			$list_emails = explode ( ",", $data ['to_email'] );
@@ -271,11 +298,17 @@ class Form extends Base_controller {
 			foreach ( $list_emails as $email ) {
 				$email = $this->process_email ( trim ( $email ) );
 				$to_user_id = $this->user_model->get_id_from_email ( trim ( $email ) );
-				$share = $this->form_model->share_form ( $data ['form_id'], $data ['title'], $data ['type_id'], $status = 1, $data ['form_filled'], $to_user_id, $data['attrs']);
-				
-				echo $share->getForm()->getId ();
+				$share = $this->form_model->share_form ( $id, $data ['title'], $data ['type_id'], $status = 1, $data ['form_filled'], $data['version'], $to_user_id, $data['attrs']);
 			}
 		}
+
+		if ($id != ''){
+			echo json_encode(array('id'=>$id,'version'=>$version));
+		}
+		else{
+			echo json_encode(array('id'=>$form));
+		}
+
 	}
 	function detail($form_id = NULL) {
 		if ($form_id != NULL) {
@@ -308,7 +341,7 @@ class Form extends Base_controller {
 	}
 	function process_email($email = NULL) {
 		$terms = explode ( " ", $email );
-		$email = trim ( $terms [2] );
+		$email = trim ( $terms [count($terms)-1] );
 		$email = substr ( $email, 1, strlen ( $email ) - 2 );
 		return $email;
 	}
@@ -435,31 +468,16 @@ class Form extends Base_controller {
 				json_encode ( '{}' );
 		}
 	}
-	function download() {
-		$data = $this->get_request_data();
-		$text = $data ['form_filled'];
-		$path = $data['title'] != "" ? sanitize_file_name($data['title']) : 'untitled';
-		echo $path;
-	}
+
 
 	function getfile(){
 		$this->load->helper('download');
 		force_download($this->session->userdata('i'),$this->session->userdata('j'));
 	}
 
-	function convertpdf(){
-		$data = $this->get_request_data();
-		$text = $data ['form_filled'];
 
-		$path = $data['title'] != "" ? sanitize_file_name($data['title']) : 'untitled';
 
-		echo $this->formmaker->generate_html_pdf($text);
-	}
 
-	function sanitize_file_name($str = '') {
-		$sanitized = preg_replace ( '/[^a-zA-Z0-9-_\.]/', '', $str );
-		return $sanitized;
-	}
 
 	function view_upload(){
 		$file = $this->input->post('file');
@@ -592,8 +610,7 @@ class Form extends Base_controller {
 			// You can pass a filename, a HTML string or an URL to the constructor
 			$pdf = new Pdf($options);
 			//echo $url = base_url()."index.php/form/get_data/1";
-			$url = '<!DOCTYPE html>
-				<html>
+			$url ='<html>
 				<head>
 				</head>
 				<body>
@@ -602,7 +619,7 @@ class Form extends Base_controller {
 				        <div id="header">
 				            This is an example header.
 				        </div>
-				        <div id="content"><h1><center>Header of form</center></h1><h4>Personal information</h4><p><span>First Name</span><span>Hiep</span></p><p><span>Last Name</span><span>Le</span></p><p><span>Date of birth</span><span>07/03/1990</span></p><p><span>Sex</span><span><input type="radio" checked>Male<br/><input type="radio" >Female<br/></span></p><p><span>Languages</span><span><input type="checkbox" checked>English<br/><input type="checkbox" checked>French<br/></span></p><h4>Job information</h4><p><span>Begining Date</span><span>06/03/1990</span></p><p><span>Salary</span><span>11111</span></p><p><span>Email</span><span>lenguyenhaohiep@gmail.com</span></p><p><span>Signature</span><span>Hiep Le</span></p><h4>Attachments</h4><p><span>Documents</span><span>0 attachment(s)</span></p></div>
+				        <div id="content"><p><span>Sign</span><span>Hiep  Le</span></p></div>
 				        <div id="footer">
 				            This is an example footer.
 				        </div>
@@ -616,10 +633,73 @@ class Form extends Base_controller {
 			// $pdf->binary = 'C:\...';
 			
 			$pdf->send();
-
 		}catch(Exception $e){
 			echo $pdf->getError();
 
 		}
 	}
+
+	function getdata(){
+		$form_id = $this->input->post('form_id');
+		$type_id = $this->input->post('type_id');
+		$title = $this->input->post('title');
+
+		$data = $this->input->post('data_form');
+		$data = str_replace('{name:', '{"name":', $data);
+		$data = str_replace(', value:', ', "value":', $data);
+		$data =  json_decode($data,true);
+
+		if ($form_id == ''){
+			$type = $this->type_model->get_type ($type_id);
+			$template_json = $type->getData ();	
+		}
+		else{
+			$form = $this->form_model->get_form ($form_id);
+			$template_json = $form->getData ();
+		}
+		$form_filled = $this->formmaker->fill_data ( $template_json, $data, false, array());
+
+		$result = array($form_id, $type_id, $form_filled, $title);
+		return $result;
+	}
+
+	function convertpdf(){
+		$data = $this->getdata();
+
+		try{		
+			$options = array(
+				'use-xserver',
+				'commandOptions' => array('enableXvfb' => true),
+				'disable-smart-shrinking',
+				'user-style-sheet' => __DIR__ .'/../../css/pdf.css',
+				"binary" => "/usr/bin/wkhtmltopdf");
+			// You can pass a filename, a HTML string or an URL to the constructor
+			$pdf = new Pdf($options);
+			//echo $url = base_url()."index.php/form/get_data/1";
+			$url = $this->formmaker->generate_html_pdf($data[2]);
+			$pdf->addPage($url);
+
+			// On some systems you may have to set the binary path.
+			// $pdf->binary = 'C:\...';
+			
+			$pdf->send();
+		}catch(Exception $e){
+			echo $pdf->getError();
+
+		}
+
+	}
+
+
+
+
+	function download() {
+		$data = $this->getdata();
+		$this->load->library('jsonformat');
+		$path = ($data[3] != "" ? $this->jsonformat->sanitize_file_name($data[3]) : 'untitled').".txt";
+		$content = $this->jsonformat->json_pretty($data[2]);
+		$this->load->helper('download');
+		force_download($path,$content);
+	}
+	
 }

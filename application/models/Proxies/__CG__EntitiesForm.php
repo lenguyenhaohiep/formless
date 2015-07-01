@@ -111,6 +111,18 @@ class Form extends \Entities\Form implements \Doctrine\ORM\Proxy\Proxy
         return parent::getStatus();
     }
 
+    public function setVersion($version)
+    {
+        $this->__load();
+        return parent::setVersion($version);
+    }
+
+    public function getVersion()
+    {
+        $this->__load();
+        return parent::getVersion();
+    }
+
     public function setUser(\Entities\User $user = NULL)
     {
         $this->__load();
@@ -138,7 +150,7 @@ class Form extends \Entities\Form implements \Doctrine\ORM\Proxy\Proxy
 
     public function __sleep()
     {
-        return array('__isInitialized__', 'id', 'title', 'path_form', 'data', 'created_date', 'status', 'user', 'type');
+        return array('__isInitialized__', 'id', 'title', 'path_form', 'data', 'created_date', 'status', 'version', 'user', 'type');
     }
 
     public function __clone()
