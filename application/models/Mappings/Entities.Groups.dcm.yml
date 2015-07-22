@@ -1,0 +1,17 @@
+Entities\Groups:
+  type: entity
+  table: groups
+  fields:
+    id:
+      type: integer
+      id: true
+      generator:
+        strategy: AUTO
+    name:
+      type: string
+      length: 20
+      nullable: false
+    description:
+      type: string
+      length: 100
+      nullable: false

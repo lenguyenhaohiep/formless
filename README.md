@@ -26,6 +26,8 @@ $CONFIG['gnupg_home'] = '/var/www/.gnupg';
 putenv("GNUPGHOME={$CONFIG['gnupg_home']}");
 ```
 * Make sure that you have granted the permission for apacher user (www) in the gnupg_home folder
+* Create a datable with the name *formless_tpt* and the collation *utf8_general_ci* and execute the script file (*formless_tpt.sql*) in the */application/sql*
+* Database configuration can be found at *application/config/database.php*
 
 Contact
 ----------

@@ -1,0 +1,20 @@
+Entities\Users_groups:
+  type: entity
+  table: users_groups
+  fields:
+    id:
+      type: integer
+      id: true
+      generator:
+        strategy: AUTO
+  manyToOne:
+    groups:
+      targetEntity: Groups
+      joinColumns:
+        group_id:
+          referencedColumnName: id
+    user:
+      targetEntity: User
+      joinColumns:
+        user_id:
+          referencedColumnName: id
