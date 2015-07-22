@@ -570,15 +570,18 @@ function save_form(mode){
 	  		  success:function(data) {
 	  			$('#cmb-type-id').prop('disabled', true);
 		  		  if (data != ''){
-                    if (mode==1){
-                        if (isNaN(data.id))
-                            display_msg('Warning',data.id);
+                    
+                        if (isNaN(data.id)){
+                            if (mode == 1)
+                                display_msg('Warning',data.id);
+                        }
                         else{
                             $('#form-id').val(data.id);
                             $('#version').val(data.version);
-                            display_msg('info', 'Saved succesfully');
+                            if (mode == 1)
+                                display_msg('info', 'Saved succesfully');
                         }
-                    }
+                    
 		  		  }
 	  		  }
 	  	});
@@ -671,6 +674,7 @@ function save_form(mode){
                     prefix='f';
                     var select =  $(document.getElementById(prefix+key));
                     if (select !== undefined){
+                        if (item != '')
                         if (select.find('option[value='+item+']').val() != undefined){
                         select.val(item);
                         select.change();
@@ -971,6 +975,7 @@ function sign_form(){
         return;
     }else{
         save_form(2);
+        setTimeout(function(){
         $.ajax({
             type: "post",
             url: '<?php echo base_url()?>index.php/form/sign',
@@ -989,6 +994,7 @@ function sign_form(){
                   }
             }
         });
+        },2000);   
     }
 }
 

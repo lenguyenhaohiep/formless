@@ -67,11 +67,11 @@ class Form_model extends CI_Model {
 					$form->setData ( $data );
 				$form->setStatus ( $status );
 				
-				if ($form_id == null)
-					$form->setVersion ( 1 );
-				else
-					$form->setVersion ( $expectedVersion + 1 );
-				$form->setVersion ( 1 );
+				//if ($form_id == null)
+				//	$form->setVersion ( 1 );
+				//else
+				//	$form->setVersion ( $expectedVersion + 1 );
+				//$form->setVersion ( 1 );
 				
 				if ($form->getUser () == NULL)
 					$form->setUser ( $this->em->find ( 'Entities\User', $this->ion_auth->get_user_id () ) );
