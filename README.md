@@ -27,6 +27,6 @@ putenv("GNUPGHOME={$CONFIG['gnupg_home']}");
 
 Contact
 ----------
-Author: Hiep Le (Vietnamese)
-Email: lenguyenhaohiep@gmail.com
+* Author: Hiep Le (Vietnamese)
+* Email: lenguyenhaohiep@gmail.com
 
