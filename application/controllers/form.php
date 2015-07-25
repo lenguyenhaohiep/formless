@@ -919,7 +919,7 @@ class Form extends Base_controller {
 	}
 	
 	/**
-	 * return the txt format of the form to be download
+	 * return the txt format of the form to be downloaded
 	 * Detail of form will be found in the report
 	 */
 	function download() {

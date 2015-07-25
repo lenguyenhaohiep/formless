@@ -38,6 +38,8 @@ class Formmaker {
 	/**
 	 * get data from json
 	 * This functions is used to extract data from JSON form stored in DB
+	 * This return value is used in the function auto-filling (fill()) in the controller FORM
+	 * 
 	 * @param string $data_json JSON Form contains data
 	 * @return array of data, each element has form (id=>value)
 	 */
@@ -49,6 +51,10 @@ class Formmaker {
 			$val = $item ['value'];
 			$type = $item ['field_type'];
 			
+			/**
+			 * Case of file where we have lots of image source 64BASE
+			 * the return value will be an array <img>
+			 */
 			if ($type == 'file') {
 				$img = '';
 				if (! is_array ( $val ))
@@ -59,17 +65,34 @@ class Formmaker {
 					if ($v != '')
 						$img .= "<img src=$v class='image-select'/><br/>";
 				$values [$id] = $img;
-			} else if ($type == 'sign') {
+			} 
+			
+			/**
+			 * Case of signature
+			 * We have 2 text for first name and last name which are displayed as 2 <span>
+			 * the last one is the image <img> for the signature photo
+			 */
+			else if ($type == 'sign') {
 				if ($val [2] != '') {
 					$values [$id] = "<span>$val[0]</span> <span>$val[1]</span> <br/><img src=$val[2] class='image-select'/>";
 				} else
 					$values [$id] = "<span>$val[0]</span> <span>$val[1]</span>";
-			} else if ($type == 'checkboxes') {
+			} 
+			
+			/**
+			 * Case of checkbox
+			 */
+			else if ($type == 'checkboxes') {
 				$p = '';
 				foreach ( $val as $v )
 					$p .= "<span>$v</span>, ";
 				$values [$id] = $p;
-			} else
+			} 
+			
+			/**
+			 * Others cases
+			 */
+			else
 				$values [$id] = $val;
 		}
 		
@@ -77,8 +100,9 @@ class Formmaker {
 	}
 	
 	/**
-	 * Get data from request data
-	 * @param unknown $data
+	 * Get data from request data with form {{name:'', value:''}} and return as an array with form {id=>data}
+	 * 
+	 * @param array $data
 	 * @return array (id=>data)
 	 */
 	function data_request_to_array($data) {
@@ -86,6 +110,8 @@ class Formmaker {
 		$_data = array ();
 		foreach ( $data as $d ) {
 			$name = $d ['name'];
+			
+			//case of multiple values
 			if (isset ( $_data [$name] )) {
 				if (! is_array ( $_data [$name] )) {
 					$temp = $_data [$name];
@@ -93,7 +119,10 @@ class Formmaker {
 					$_data [$name] [] = $temp;
 				}
 				$_data [$name] [] = $d ['value'];
-			} else {
+			}
+			
+			//case of scalar value
+			else {
 				$_data [$name] = $d ["value"];
 			}
 		}
@@ -178,8 +207,10 @@ class Formmaker {
 	
 	/**
 	 * 
-	 * @param unknown $relation
-	 * @return Ambigous <multitype:, unknown>
+	 * Parse an entity of Relation to the array
+	 * 
+	 * @param entity $relation
+	 * @return array which depicts the relation
 	 */
 	function get_relation($relation) {
 		$result = array ();
@@ -193,6 +224,15 @@ class Formmaker {
 		}
 		return $result;
 	}
+	
+	/**
+	 * 
+	 * Parse the relation from JSON template in case of two identical forms
+	 * 
+	 * @param int $type_id
+	 * @param string $json JSON template
+	 * @return array which depicts the relation
+	 */
 	function get_relation_identical($type_id, $json) {
 		$result = array ();
 		
@@ -208,6 +248,15 @@ class Formmaker {
 		}
 		return $result;
 	}
+	
+	/**
+	 * get fields of Json template
+	 * Each field contains type and label
+	 * 
+	 * @param string $json JSON template
+	 * @param string $data not implemented yet, can be NULL
+	 * @return array of fields
+	 */
 	function get_attribute_from_json($json, $data = NULL) {
 		$result = array ();
 		$template = json_decode ( $json, true );
@@ -225,13 +274,24 @@ class Formmaker {
 		}
 		return $result;
 	}
+	
+	/**
+	 * Generate HTML text from JSON template
+	 * In case that there are some fields the user cannot modify, HTML element will be displayed as disabled item
+	 * 
+	 * 
+	 * @param string $json JSON template
+	 * @param array $attrs List of fields that is modifiable for the current user
+	 * @return string
+	 */
 	function generate_from_json($json, $attrs = NULL) {
 		$template = json_decode ( $json, true );
 		$template = $template ['fields'];
 		if (count ( $template ) > 0) {
 			foreach ( $template as $component ) {
 				$type = $component ['field_type'];
-				// check if field is authorized
+				
+				// check if field is authorized to modify
 				if (! isset ( $attrs ))
 					$disable = '';
 				else {
@@ -240,6 +300,8 @@ class Formmaker {
 					} else
 						$disable = '';
 				}
+				
+				// assign the html text corresponding to the type
 				switch ($type) {
 					case 'header' :
 						$this->html_template .= $this->generate_header ( $component, $disable );
@@ -286,6 +348,14 @@ class Formmaker {
 		}
 		return $this->html_template . "</table><input type='submit' id='validate' style='display:none'/></form>";
 	}
+	
+	/**
+	 * Generate a HTML representation for a form to be export in PDF, 
+	 * this html is different from the one displayed in web browser
+	 * 
+	 * @param string $json JSON template
+	 * @return string HTML
+	 */
 	function generate_html_pdf($json) {
 		$template = json_decode ( $json, true );
 		$template = $template ['fields'];
@@ -319,6 +389,8 @@ class Formmaker {
 						$type = str_replace ( "es", "", $type );
 						$options = $component ['field_options'] ['options'];
 						$html .= "<p><span>" . $component ['label'] . "</span><span>";
+						
+						//multiple value
 						if (isset ( $component ['value'] )) {
 							$value = $component ['value'];
 							if (! is_array ( $value ))
@@ -327,6 +399,8 @@ class Formmaker {
 								);
 						} else
 							$value = array ();
+						
+						//checked values
 						foreach ( $options as $opt ) {
 							$val = $opt ['label'];
 							if (in_array ( $val, $value ))
@@ -336,6 +410,7 @@ class Formmaker {
 							
 							$html .= "<input type='$type' $check>$val<br/>";
 						}
+						
 						$html .= "</span></p>";
 						break;
 					
@@ -364,20 +439,54 @@ class Formmaker {
 				</body>
 				</html>';
 	}
+	
+	/**
+	 * 
+	 * Return a HTML text for a "required" item
+	 * 
+	 * @param unknown $true
+	 * @return string
+	 */
 	function check_require($true) {
 		if ($true == true)
 			return 'required';
 		return '';
 	}
+	
+	/**
+	 * Return a HTML label for an item
+	 * 
+	 * @param unknown $true
+	 * @return string
+	 */
 	function text_require($true) {
 		if ($true == true)
 			return '<span class="field-required">*</span>';
 		return '';
 	}
+	
+	/**
+	 * Generate a HTML text that represents a INPUT[type=text]
+	 *
+	 * @param array $component a component with type of text input  from JSON template which contains cid, label and others options
+	 * @param bool $disable to indicate the HTML element is disabled
+	 * @return string that represent a HTML element
+	 */
 	function generate_text($component, $disable) {
 		// {"label":"Name","field_type":"text","required":true,"field_options":{"size":"small"},"cid":"c22"}
 		return $this->generate_html5_type ( $component, $type = 'text', $disable );
 	}
+	
+	/**
+	 * Generate a HTML text that represents a HTML5 element
+	 *
+	 * @param array $component a component with type of HTML5 from JSON template which contains cid, label and others options
+	 * @param bool $disable to indicate the HTML element is disabled
+	 * @param string $type type of the element
+	 * @param array $option
+	 * 
+	 * @return string that represent a HTML element
+	 */
 	function generate_html5_type($component, $type, $disable, $option = NULL) {
 		$id = $component ['cid'];
 		$require = $this->check_require ( $component ['required'] );
@@ -450,6 +559,14 @@ class Formmaker {
 		
 		return $html;
 	}
+	
+	/**
+	 * Generate a HTML text that represents a TEXTAREA
+	 *
+	 * @param array $component a component with type of paragraph from JSON template which contains cid, label and others options
+	 * @param bool $disable to indicate the HTML element is disabled
+	 * @return string that represent a HTML element
+	 */
 	function generate_paragraph($component, $disable) {
 		$id = $component ['cid'];
 		$require = $this->check_require ( $component ['required'] );
@@ -464,10 +581,26 @@ class Formmaker {
 		$html = "<tr><td><label for='$id'>$label $require_text</label></td><td><textarea id='$id' name='$id' $require $disable>$value</textarea></td></tr>";
 		return $html;
 	}
+	
+	/**
+	 * Generate a HTML text that represents a Header <H3>
+	 *
+	 * @param array $component a component with type of Header from JSON template which contains cid, label and others options
+	 * @param bool $disable to indicate the HTML element is disabled
+	 * @return string that represent a HTML element
+	 */
 	function generate_header($component, $disable) {
 		$html = "<tr><td colspan='2'><center> <h3 id='" . $component ['cid'] . "'>" . $component ['label'] . "</h3> </center></td></tr>";
 		return $html;
 	}
+	
+	/**
+	 * Generate a HTML text that represents a input[type=checkbox]
+	 *
+	 * @param array $component a component with type of Checkbox from JSON template which contains cid, label and others options
+	 * @param bool $disable to indicate the HTML element is disabled
+	 * @return string that represent a HTML element
+	 */
 	function generate_checkboxes($component, $disable) {
 		$id = $component ['cid'];
 		$require = $this->check_require ( $component ['required'] );
@@ -497,6 +630,14 @@ class Formmaker {
 		$html .= "</td></tr>";
 		return $html;
 	}
+	
+	/**
+	 * Generate a HTML text that represents a input[type=radio]
+	 *
+	 * @param array $component a component with type of Radio from JSON template which contains cid, label and others options
+	 * @param bool $disable to indicate the HTML element is disabled
+	 * @return string that represent a HTML element
+	 */
 	function generate_radio($component, $disable) {
 		$id = $component ['cid'];
 		$require = $this->check_require ( $component ['required'] );
@@ -525,9 +666,25 @@ class Formmaker {
 		
 		return $html;
 	}
+	
+	/**
+	 * Generate a HTML text that represents a Date Input[type=date]
+	 *
+	 * @param array $component a component with type of date input from JSON template which contains cid, label and others options
+	 * @param bool $disable to indicate the HTML element is disabled
+	 * @return string that represent a HTML element
+	 */
 	function generate_date($component, $disable) {
 		return $this->generate_html5_type ( $component, $type = 'date', $disable );
 	}
+	
+	/**
+	 * Generate a HTML text that represents a SELECT
+	 *
+	 * @param array $component a component with type of dropdown from JSON template which contains cid, label and others options
+	 * @param bool $disable to indicate the HTML element is disabled
+	 * @return string that represent a HTML element
+	 */
 	function generate_dropdown($component, $disable) {
 		$id = $component ['cid'];
 		$require = $this->check_require ( $component ['required'] );
@@ -547,18 +704,59 @@ class Formmaker {
 		
 		return $html;
 	}
+	
+	/**
+	 * Generate a HTML text that represents a Number input[type=number]
+	 *
+	 * @param array $component a component with type of number input from JSON template which contains cid, label and others options
+	 * @param bool $disable to indicate the HTML element is disabled
+	 * @return string that represent a HTML element
+	 */
 	function generate_number($component, $disable) {
 		return $this->generate_html5_type ( $component, $type = 'number', $disable );
 	}
+	
+	/**
+	 * Generate a HTML text that represents a Email input[type='email']
+	 *
+	 * @param array $component a component with type of SECTION from JSON template which contains cid, label and others options
+	 * @param bool $disable to indicate the HTML element is disabled
+	 * @return string that represent a HTML element
+	 */
 	function generate_email($component, $disable) {
 		return $this->generate_html5_type ( $component, $type = 'email', $disable );
 	}
+	
+	
+	/**
+	 * Generate a HTML text that represents a File Upload input[type=file]
+	 *
+	 * @param array $component a component with type of File Upload from JSON template which contains cid, label and others options
+	 * @param bool $disable to indicate the HTML element is disabled
+	 * @return string that represent a HTML element
+	 */
 	function generate_file($component, $disable) {
 		return $this->generate_html5_type ( $component, $type = 'file', $disable, $option = 'multiple class="file-upload" onchange="process_upload(this,2)"' );
 	}
+
+	/**
+	 * Generate a HTML text that represents a signature which contains 2 inputs for First Last Name and one type=file for image of signature
+	 *
+	 * @param array $component a component with type of SECTION from JSON template which contains cid, label and others options
+	 * @param bool $disable to indicate the HTML element is disabled
+	 * @return string that represent a HTML element
+	 */
 	function generate_sign($component, $disable) {
 		return $this->generate_html5_type ( $component, $type = 'sign', $disable, $option = 'class="file-upload" onchange="process_upload(this,1)"' );
 	}
+	
+	/**
+	 * Generate a HTML text that represents a Section <h4>
+	 * 
+	 * @param array $component a component with type of SECTION from JSON template which contains cid, label and others options
+	 * @param bool $disable to indicate the HTML element is disabled
+	 * @return string that represent a HTML element
+	 */
 	function generate_section($component, $disable) {
 		$html = "<tr><td colspan='2'><h4 id='" . $component ['cid'] . "'>" . $component ['label'] . "</h4></td></tr>";
 		return $html;
