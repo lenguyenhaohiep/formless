@@ -1,4 +1,11 @@
 <?php
+/**
+ * @author Hiep Le
+ * 
+ * Name: User controller
+ * 
+ * Description: This class aims to handle the request for the tasks related to users
+ */
 
 require_once 'base_controller.php';
 
@@ -10,6 +17,9 @@ class User extends Base_controller{
 		$this->load_base();
 	}
 	
+	/**
+	 * Get all of email of this application except the current user
+	 */
 	function get_all_emails(){
 		$this->load->model('user_model');
 		$emails = $this->user_model->get_all_emails();
@@ -17,6 +27,9 @@ class User extends Base_controller{
 	}
 	
 
+	/**
+	 * Generate SSL pair-key, this function is not currently used in the application
+	 */
 	function genkey(){
 			error_reporting(E_ERROR | E_PARSE);
 			$pass = $this->input->post('pass');
@@ -52,6 +65,10 @@ class User extends Base_controller{
 
 	}
 
+	/**
+	 * Save the key-pair uploaded by user to DB, the key pair standard used in OpenPGP
+	 * Return the tuple id if successful
+	 */
 	function savekey(){
 		$pri = $this->input->post('priv');
 		$pub = $this->input->post('pub');
@@ -59,13 +76,21 @@ class User extends Base_controller{
 		$cert = $this->user_model->create_or_update_key($pub, $pri);
 		echo $cert->getId();
 	}
-
+	
+	
+	/**
+	 * Load the key-pair of the current user
+	 * Return '' if there is no keypair for the current user, else return public key
+	 */
 	function loadkey(){
 		$this->load->model('user_model');
 		$cert = $this->user_model->load_user_pair_key();
 		echo ($cert==null) ? "" : $cert->getPubicKey();
 	}
 
+	/**
+	 * Get the key information of the current user, which contains the registration date, expiration date and the status of the key pair
+	 */
 	function loadkeyinfo(){
 		$this->load->model('user_model');
 		$cert = $this->user_model->load_user_pair_key();

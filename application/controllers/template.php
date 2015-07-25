@@ -4,12 +4,19 @@ require_once 'base_controller.php';
 
 class Template extends CI_Controller {
 
+	/**
+	 * Get and return all groups of type in the application
+	 */
     function get_group() {
         $this->load->model('type_model');
         $groups = $this->type_model->getAllTypes();
         echo json_encode($groups);
     }
 
+    /**
+     * Return the template corresponds to the type id given
+     * Return null of type does not exist
+     */
     function get_template($type_id = NULL) {
         if ($type_id != NULL) {
             $this->load->model('type_model');
@@ -23,6 +30,13 @@ class Template extends CI_Controller {
         }
     }
 
+    
+    /**
+     * Return the relation (JSON) between to types
+     * each JSON is a pair ('a':'b') which means type1[a]=type2[b]
+     * @param int $type_id
+     * @param int $type_id2
+     */
     function get_relation($type_id = NULL, $type_id2 = NULL) {
         if ($type_id != NULL && $type_id2 != NULL) {
             $this->load->library('formmaker');
@@ -53,6 +67,10 @@ class Template extends CI_Controller {
         }
     }
 
+    /**
+     * Reponse the list of attribute name (JSON) of the type given
+     * @param int $type_id
+     */
     function get_attr($type_id = NULL) {
         $this->load->library('formmaker');
         if ($type_id != null) {
@@ -66,8 +84,13 @@ class Template extends CI_Controller {
         }
     }
 
+    /**
+     * Save a template to database
+     */
     function save() {
+    	//get the request data
         $type_id = $this->input->post('type_id');
+        //Json template
         $json_template = $this->input->post('json_template');
 
         $this->load->model('type_model');
@@ -76,6 +99,10 @@ class Template extends CI_Controller {
         echo $type->getId();
     }
 
+    /**
+     * Discard a template (type) by the id given
+     * @param int $type_id
+     */
     function discard($type_id) {
         if ($type_id != null) {
             $this->load->model('type_model');
@@ -94,9 +121,17 @@ class Template extends CI_Controller {
         echo json_encode($result);
     }
 
+    
+    /**
+     * Define the relation between two forms
+     */
     function relation() {
+    	//type 1 and 2
         $type_id1 = $this->input->post('type_id1');
         $type_id2 = $this->input->post('type_id2');
+        
+        //relation defined by a array of array (name=>value) 
+        //where name is the attribute name of type 1, and value is for type 2
         $data = $this->input->post('data');
 
         $this->load->model('type_model');
@@ -108,12 +143,19 @@ class Template extends CI_Controller {
         echo "defined successfully";
     }
     
+    /**
+     * Check whether there is the relation between forms
+     * @return pairs (type1, type2)
+     */
     function get_simple_edge(){
     	$sql = 'SELECT DISTINCT type_id_1, type_id_2 FROM `form_relation` ';
     	$sent = $this->em->getConnection()->query($sql)->fetchAll();
     	return $sent;
     }
     
+    /**
+     * Building the graph relation between forms
+     */
     function graph(){
     	$this->load->model('type_model');
     	$this->load->library('graphmaker');

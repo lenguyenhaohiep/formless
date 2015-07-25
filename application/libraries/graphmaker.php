@@ -1,7 +1,16 @@
 <?php
+
+/**
+ * Name: Graphmaker
+ * 
+ * @author Hiep Le
+ *
+ * Description: This class will apply the BDF in the graph theory to idenfify the relation
+ * between from and update this information to database 
+ */
 class Graphmaker {
 	
-	/*
+	/**
 	 * A simple iterative Breadth-First Search implementation.
 	 * http://en.wikipedia.org/wiki/Breadth-first_search
 	 * Code usage under the license MIT, open soure
@@ -39,7 +48,9 @@ class Graphmaker {
 		}
 		return false;
 	}
-	/*
+	
+	
+	/**
 	 * Same as bfs() except instead of returning a bool, it returns a path.	 
 	 * Code usage under the license MIT, open soure
 	 * Implemented by enqueuing a path, instead of a node, for each neighbour.
@@ -74,7 +85,7 @@ class Graphmaker {
 		return false;
 	}
 	
-	/*
+	/**
 	 * Code adaptation to this application
 	 * Build a undirected graph between form relation 
 	 * 
@@ -105,7 +116,7 @@ class Graphmaker {
 		return $graph;
 	}
 	
-	/*
+	/**
 	 * get all nodes related to an template 
 	 */
 	function get_nodes($relations, $type_id){
@@ -134,7 +145,7 @@ class Graphmaker {
 		return $nodes;
 	}
 	
-	/*
+	/**
 	 * find relations between two list of nodes, each list corresponds to a type/template
 	 * return the relations
 	 */

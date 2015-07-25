@@ -1,18 +1,44 @@
 <?php
+/**
+ * Name: Securitygpg
+ * @author Hiep Le
+ * 
+ * Description: This is to handle the signing and verification
+ *
+ */
+
 class Securitygpg{
+	
+	/**
+	 * Construction and configuration of the GnuPG
+	 */
 	function Securitygpg(){
 		$CONFIG['gnupg_home'] = '/var/www/.gnupg';
 		putenv("GNUPGHOME={$CONFIG['gnupg_home']}");
 
 	}
 
+	/**
+	 * Verify a signature
+	 * 
+	 * @param string $signed_message
+	 * @param string $public_key
+	 * @param array $keyinfo the info of keys using to sign the form
+	 * @return boolean
+	 */
 	function verify($signed_message, $public_key, &$keyinfo){
 		$plaintext = "";
 		$gnupg = new gnupg();
+		
+		//set mode error to display in the browser
 		$gnupg->seterrormode(gnupg::ERROR_EXCEPTION);
 		try{
+			//import public key
 			$public = $gnupg->import($public_key);
+			
+			//verify the signature
 			$info = $gnupg->verify($signed_message, false, $plaintext);
+			
 			if($info !== false){
 				  $fingerprint = $info[0]['fingerprint'];
 				  $fingerprint_publickey = $public['fingerprint'];
@@ -32,13 +58,30 @@ class Securitygpg{
 		return false;
 	}
 
+	
+	/**
+	 * Sign a text
+	 * 
+	 * @param string $message
+	 * @param string $private_key
+	 * @param string $pass_phrase
+	 * @return string signed message
+	 */
 	function sign($message, $private_key, $pass_phrase){
 		try{
 			$gnupg = new gnupg();
+			
+			//set error mode and import key to sign
 			$gnupg->seterrormode(gnupg::ERROR_EXCEPTION);
 			$private = $gnupg->import($private_key);
+			
+			//add key to sign
 			$gnupg->addsignkey($private['fingerprint'], $pass_phrase);
+			
+			//sign
 			$signed_message = $gnupg->sign($message);
+			
+			//return signed message
 			return $signed_message;
 		} catch(Exception $e) {
   			echo 'Message: ' .$e->getMessage();
@@ -50,6 +93,14 @@ class Securitygpg{
 
 	}
 
+	
+	/**
+	 * Get key info from fingerprint
+	 * 
+	 * 
+	 * @param string $fingerprint
+	 * @return array which contains key information respectively
+	 */
 	function get_by_fingerprint($fingerprint){
 			$gnupg = new gnupg();
 			$detail = $gnupg->keyinfo($fingerprint);
@@ -66,6 +117,13 @@ class Securitygpg{
 			return $data;
 	}
 
+	
+	/**
+	 * Get information of the key
+	 * 
+	 * @param string $key
+	 * @return array which contains the information corresponding to the key
+	 */
 	function get_information($key){
 		$gnupg = new gnupg();
 		$gnupg->seterrormode(gnupg::ERROR_EXCEPTION);
@@ -81,13 +139,17 @@ class Securitygpg{
 		return null;
 	}
 
+	
+	/**
+	 * Extraction of the plain text from signed text
+	 * 
+	 * @param string $signed_text
+	 * @return string the plain text
+	 */
 	function extract_plaintext($signed_text){
 		$plaintext = "";
 		$gpg = new gnupg();
-		// signé en clair
 		$info = $gpg -> verify($signed_text,false,$plaintext);
-		echo "dadasdsa<br/>";
-		print_r($info);
 		return $plaintext;
 	}
 
