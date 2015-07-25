@@ -19,17 +19,18 @@ Project's Dependencies
 
 Project Installation
 -----------
-* Clone the whole project in the webpage folder (var/www) in the case of Linux Ubuntu
-* Change the configuration for GnuPG (/applications/libraries/securitygpg)
+* Clone the whole project in the webpage folder (*var/www*) in the case of Linux Ubuntu
+* Change the configuration for GnuPG (*/applications/libraries/securitygpg*)
 ```
 $CONFIG['gnupg_home'] = '/var/www/.gnupg';
 putenv("GNUPGHOME={$CONFIG['gnupg_home']}");
 ```
 * Make sure that you have granted the permission for apacher user (www) in the gnupg_home folder
-* Create a database with the name *formless_tpt* and the collation *utf8_general_ci* and execute the script file (*formless_tpt.sql*) in the */application/sql*
-* Database configuration can be found at *application/config/database.php*
+* Create a database with the name **formless_tpt** and the collation **utf8_general_ci** and execute the script file (**formless_tpt.sql**) in the **/application/sql**
+* Database configuration can be found at **application/config/database.php**.
 
-#Contact
+Contact
+----------
 * Author: Hiep Le (Vietnamese)
 * Email: lenguyenhaohiep@gmail.com
 
