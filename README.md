@@ -17,7 +17,7 @@ Project's Dependencies
 * wkhtmltopdf
 
 
-Project's Setup
+Project Installation
 -----------
 * Clone the whole project in the webpage folder (var/www) in the case of Linux Ubuntu
 * Change the configuration for GnuPG (/applications/libraries/securitygpg)
